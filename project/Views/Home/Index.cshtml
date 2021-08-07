@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section Header {
+    <div class="container">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">project</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="float-right">
+            <ul class="navbar-nav flex-grow-1">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <p>@User.Identity.Name</p>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">Регистрация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">Логин</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>

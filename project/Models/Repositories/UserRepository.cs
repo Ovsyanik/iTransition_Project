@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using project.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,17 +23,22 @@ namespace project.Models.Repositories
             return user;
         }
 
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await _context.Set<User>().ToListAsync();
+        }
+
         public async Task Register(User user)
         {
-            await _context.Set<User>().AddAsync(user);
+            _context.Set<User>().Add(user);
             
             await Save();
         }
 
         public async Task<User> Authenticate(string email, string password)
         {
-            User user = await _context.Users.FirstOrDefaultAsync(u => 
-                u.Email == email && u.Password == password);
+            User user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == email && u.PasswordHash == password);
 
             return user;
         }

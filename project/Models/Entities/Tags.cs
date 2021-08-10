@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace project.Models
+namespace project.Models.Entities
 {
-    public class Book
+    public class Tags
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

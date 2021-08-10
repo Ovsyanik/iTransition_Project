@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
+using System;
 
 namespace project
 {
@@ -25,15 +26,16 @@ namespace project
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string connection = Configuration.GetConnectionString("DefaultConnection");
-
             services.AddControllersWithViews();
 
-            services.AddTransient<BookRepository>();
+            services.AddTransient<ItemRepository>();
             services.AddTransient<UserRepository>();
-
             services.AddDbContext<MyDbContext>(options =>
-                options.UseSqlServer(connection));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddDefaultIdentity<User>()
+                .AddEntityFrameworkStores<MyDbContext>();
+
 
             //services.AddAuthentication()
             //    .AddOAuth("VK", "VKontakte", options =>
@@ -54,13 +56,16 @@ namespace project
                     facebookOptions.AppId = Configuration["Authentication:Facebook:AppId"];
                     facebookOptions.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
                 })
+                .AddGoogle(googleOptions =>
+                {
+                    googleOptions.ClientId = Configuration["Authentication:Google:AppId"];
+                    googleOptions.ClientSecret = Configuration["Authentication:Google:AppSecret"];
+                    googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
+                })
                 .AddCookie(options =>
                 {
                     options.LoginPath = new PathString("/Account/Authentication");
                 });
-
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                       .AddEntityFrameworkStores<MyDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

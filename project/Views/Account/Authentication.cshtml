@@ -29,6 +29,10 @@
     </div>
 }
 
+@{ 
+    LoginViewModel loginViewModel = Model;
+}
+
 <form method="post" action="~/account/AuthenticationUser">
     <div class="form-group">
         <label for="email">Email</label>
@@ -41,38 +45,17 @@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
-@foreach (var item in Model)
-{
-    <div class="col-lg-12 p-2">
-        <a href="~/account/ExternalLogin?provider=@item"
-           class="btn btn-block btn-primary">
-            <span class="icon-facebook2"></span> @item
-        </a>
-    </div>
-
-    <div class="col-md-6">
-        <h1>External Login</h1>
-        <hr />
-        @{
-            if (Model.ExternalLogins.Count == 0)
-            {
-                <div>No external logins configured</div>
-            }
-            else
-            {
-                <form method="post" asp-controller="Account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
-                    <div>
-                        @foreach (var provider in Model.ExternalLogins)
-                        {
-                            <button type="submit" class="btn btn-primary"
-                                    name="provider" value="@provider.Name"
-                                    title="Login usin your @provider.DisplayName account">
-                                @provider.DisplayName
-                            </button>
-                        }
-                    </div>
-                </form>
-            }
+<form method="post" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
+    <div>
+        @foreach (var provider in Model.ExternalLogins)
+        {
+            <button type="submit" class="btn btn-primary"
+                    name="provider" value="@provider.Name"
+                    title="Log in using your @provider.DisplayName account">
+                @provider.DisplayName
+            </button>
         }
     </div>
-}
+</form>
+
+<a class="btn btn-info" asp-controller="Account" asp-action="GoogleLogin">Log In With Google</a>

@@ -17,23 +17,15 @@ namespace project.Controllers
     public class AccountController : Controller
     {
         private readonly UserRepository userRepository;
-        private readonly IAuthenticationSchemeProvider authenticationSchemeProvider;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly SignInManager<User> signInManager;
+        private readonly UserManager<User> userManager;
 
-        public AccountController(SignInManager<IdentityUser> signInManager, UserRepository userRepository)
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
         {
             this.signInManager = signInManager;
             this.userRepository = userRepository;
+            this.userManager = userManager;
         }
-
-        //[HttpGet]
-        //public async Task<IActionResult> Authentication()
-        //{
-        //    var allSchemeProvider = (await authenticationSchemeProvider.GetAllSchemesAsync())
-        //        .Select(n => n.DisplayName).Where(n => !string.IsNullOrEmpty(n));
-
-        //    return View(allSchemeProvider);
-        //}
 
         [HttpGet]
         [AllowAnonymous]
@@ -53,7 +45,7 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AuthenticationUser(string email, string password)
         {
-            User user = await userRepository.Authenticate(email, password);
+            IdentityUser user = await userRepository.Authenticate(email, password);
 
             if (user != null)
             {
@@ -73,106 +65,81 @@ namespace project.Controllers
             return View();
         }
 
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public IActionResult ExternalLogin(string provider)
-        //{
-            
-        //    return Challenge(new AuthenticationProperties { RedirectUri = "/" }, provider);
-        //}
-
         [AllowAnonymous]
         [HttpPost]
         public IActionResult ExternalLogin(string provider, string returnUrl)
         {
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
-                                    new { ReturnUrl = returnUrl });
+                var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
+                    new { ReturnUrl = returnUrl });
 
-            var properties =
-                signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+                var properties =
+                    signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
 
-            return new ChallengeResult(provider, properties);
+                return new ChallengeResult(provider, properties);
+            
         }
+
 
         [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        public IActionResult GoogleLogin()
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
-            LoginViewModel loginViewModel = new LoginViewModel
+            string redirectUrl = Url.Action("GoogleResponse", "Account");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            return new ChallengeResult("Google", properties);
+        }
+
+
+        [AllowAnonymous]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
+             
+            await Authenticate(info.Principal.FindFirst(ClaimTypes.Email).Value);
+
+            User user = new User
             {
-                ReturnUrl = returnUrl,
-                ExternalLogins = (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
+                Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
+                UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
+                Provider = info.LoginProvider,
+                Role = RoleUser.User
             };
 
-            if (remoteError != null)
-            {
-                ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+            User checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
 
-                return View("Authentication", loginViewModel);
+            if (checkUser == null)
+            {
+                await userRepository.Register(user);
             }
 
-            var info = await signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
-            {
-                ModelState.AddModelError(string.Empty, "Error loading external login information.");
-
-                return View("Login", loginViewModel);
-            }
-
-            var signInResult = await signInManager.ExternalLoginSignInAsync(info.LoginProvider,
-                                        info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-
-            if (signInResult.Succeeded)
-            {
-                return LocalRedirect(returnUrl);
-            }
-            else
-            {
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-
-                if (email != null)
-                {
-                    //var user = await userRepository.GetByEmail(email);
-
-                    //if (user == null)
-                    //{
-                    //    user = new ApplicationUser
-                    //    {
-                    //        UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
-                    //        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    //    };
-
-                    //    await userRepository.CreateAsync(user);
-                    //}
-
-                    //await userRepository.AddLoginAsync(user, info);
-                    //await signInManager.SignInAsync(user, isPersistent: false);
-
-                    return LocalRedirect(returnUrl);
-                }
-
-                ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
-                ViewBag.ErrorMessage = "Please contact support on Pragim@PragimTech.com";
-
-                return View("Error");
-                }
+            return RedirectToAction("Index", "Home");
         }
+
 
         public async Task<IActionResult> SignOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
             return RedirectToAction("Authentication", "Account");
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrationUser(string firstName, string lastName, string email, string password)
+        public async Task<IActionResult> RegistrationUser(string userName, string email, string password)
         {
             User user = await userRepository.GetUserByEmail(email);
+
             if (user == null)
             {
-                await userRepository.Register(new User(
-                    firstName, lastName, RoleUser.User, email, password));
+                User newUser = new User
+                {
+                    UserName = userName,
+                    Email = email,
+                    PasswordHash = password,
+                    Role = RoleUser.User
+                };
+
+                await userRepository.Register(newUser);
 
                 return RedirectToAction("Authentication", "Account");
             }
@@ -181,6 +148,7 @@ namespace project.Controllers
                 return RedirectToAction("Registration", "Account");
             }
         }
+
 
         private async Task Authenticate(string email)
         {

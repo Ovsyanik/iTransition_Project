@@ -1,8 +1,4 @@
-﻿@{ 
-    List<User> users = Model;
-}
-
-@section Header {
+﻿@section Header {
     <div class="container">
         <a class="navbar-brand" asp-controller="Home" asp-action="Index">project</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -24,6 +20,7 @@
             <ul class="navbar-nav flex-grow-1">
                 @if (User.Identity.IsAuthenticated)
                 {
+                    <p>@User.Identity.Name</p>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
                     </li>
@@ -42,37 +39,6 @@
     </div>
 }
 
-<p class="text-center">Пользователи</p>
+<a class="btn btn-info" asp-controller="Home" asp-action="AddCollection">Добавить коллекцию</a>
 
-<table class="table" id="table">
-    <thead class="thead-light">
-        <tr>
-            <th>
-                <div class="form-check" style="margin-bottom: 60%">
-                    <input class="form-check-input" type="checkbox" id="checkBoxMain" onchange="checkAll()">
-                </div>
-            </th>
-            <th scope="col">Id</th>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Role</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (User user in users)
-        {
-            <tr>
-                <td>
-                    <div class="form-check">
-                        <input class="form-check-input check"
-                               type="checkbox">
-                    </div>
-                </td>
-                <td>@user.Id</td>
-                <td>@user.UserName</td>
-                <td>@user.Email</td>
-                <td>@user.Role</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<p class="text-center">Мои коллекции</p>

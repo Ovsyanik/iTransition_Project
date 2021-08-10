@@ -1,6 +1,46 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity;
+@{
     ViewData["Title"] = "Home Page";
 }
+<style>
+    .search:after {
+        content: "";
+        clear: both;
+        display: table
+    }
+
+    .search form {
+        width: auto;
+        float: right;
+        margin-right: 30px;
+    }
+
+    .search input {
+        width: 250px;
+        height: 42px;
+        padding-left: 15px;
+        border-radius: 42px;
+        border: 1px solid ;
+        outline: none;
+        position: relative;
+    }
+
+    .search .ser-button {
+        width: 42px;
+        height: 42px;
+        background: none;
+        z-index: 10;
+        border: none;
+        position: absolute;
+        margin: auto 210px;
+        float: right;
+        color: #324b4e;
+    }
+
+    .search .ser-button:before {
+        color: #324b4e;
+    }
+</style>
 
 @section Header {
     <div class="container">
@@ -15,16 +55,29 @@
                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Мои коллекции</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Admin">Админ панель</a>
                 </li>
             </ul>
         </div>
 
         <div class="float-right">
             <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item">
+                    <div class="search">
+                        <form asp-controller="Home" asp-action="Search" method="get">
+                            <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            <input type="text" name="searchText" placeholder="Искать здесь..." />
+                        </form>
+                    </div>
+                </li>
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <p>@User.Identity.Name</p>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
                     </li>

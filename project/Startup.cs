@@ -30,6 +30,7 @@ namespace project
 
             services.AddTransient<ItemRepository>();
             services.AddTransient<UserRepository>();
+            services.AddTransient<GoogleRepository>();
             services.AddDbContext<MyDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 

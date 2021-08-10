@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Google.Apis.Auth.OAuth2;
 using System.Threading.Tasks;
 
-namespace project.Models.Services
+namespace project.Models.Repositories
 {
     public class GoogleRepository
     {

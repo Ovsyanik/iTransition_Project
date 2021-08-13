@@ -13,24 +13,10 @@ namespace project.Models.Entities
 
         public List<Tags> Tags { get; set; }
 
-        public int Visible { get; set; }
+        public int CustomFieldId { get; set; } 
 
-        public int integer1 { get; set; }
+        public string CustomFieldValue { get; set; }
 
-        public int integer2 { get; set; }
-
-        public int integer3 { get; set; }
-
-        public string field1 { get; set; }
-
-        public string field2 { get; set; }
-
-        public string field3 { get; set; }
-
-        public string textField1 { get; set; }
-
-        public string textField2 { get; set; }
-
-        public string textField3 { get; set; }
+        public virtual ICollection<CustomField> Fields { get; set; }
     }
 }

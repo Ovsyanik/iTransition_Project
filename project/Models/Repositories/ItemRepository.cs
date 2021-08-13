@@ -15,6 +15,13 @@ namespace project.Models.Repositories
             _context = context;
         }
 
+        public List<Item> GetAll(int id)
+        {
+            Collection collection = _context.Collections.Where(col => col.Id == id).FirstOrDefault();
+
+            return collection.Items;
+        }
+
         public async Task Add(Item item)
         {
 
@@ -37,9 +44,11 @@ namespace project.Models.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Collection<Item>>> GetCollections()
+        public async Task<List<Collection>> GetCollections()
         {
-            return new List<Collection<Item>>();   
+            return new List<Collection>();   
         }
+
+
     }
 }

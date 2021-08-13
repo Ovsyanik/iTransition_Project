@@ -1,7 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using project.Models;
@@ -13,19 +10,27 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace project.Controllers
 {
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ItemRepository _bookRepository;
+        private readonly ItemRepository _itemRepository;
         private readonly UserRepository _userRepository;
+        private readonly CloudRepository _googleRepositoy;
+        private readonly CollectionRepository _collectionRepository;
+        private readonly CustomFieldRepository _customFieldRepository;
 
-        public HomeController(ItemRepository bookReposetory, UserRepository userRepository)
+        public HomeController(ItemRepository itemReposetory, UserRepository userRepository, 
+            CloudRepository googleRepository, CollectionRepository collectionRepository, CustomFieldRepository customFieldRepository)
         {
-            _bookRepository = bookReposetory;
+            _itemRepository = itemReposetory;
             _userRepository = userRepository;
+            _googleRepositoy = googleRepository;
+            _collectionRepository = collectionRepository;
+            _customFieldRepository = customFieldRepository;
         }
 
 
@@ -33,12 +38,22 @@ namespace project.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
-            return View(_bookRepository.GetCollections());
+            return View(_itemRepository.GetCollections());
         }
 
 
         [HttpGet]
-        public IActionResult Collections()
+        public async Task<IActionResult> Collections()
+        {
+            List<Collection> collection = _collectionRepository.GetAllByUser(
+               await _userRepository.GetUserByEmail(User.Identity.Name)
+                );
+            return View(collection);
+        }
+
+
+        [HttpGet]
+        public IActionResult AddItem()
         {
             return View();
         }
@@ -50,6 +65,40 @@ namespace project.Controllers
             return View();
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> AddCollectionPost(IFormFile files, string description, string name, TypeItem theme, string[] field, CustomFieldType[] newFieldType)
+        {
+            int idCollection = await _collectionRepository.Add(new Collection(
+                name, 
+                description, 
+                theme,
+                await _googleRepositoy.UploadPhoto(files.OpenReadStream()),
+                await _userRepository.GetUserByEmail(User.Identity.Name)));
+
+            for(int i = 0; i < field.Length; i++)
+            {
+                CustomField customField = new CustomField {
+                    CollectionId = idCollection,
+                    Title = field[i],
+                    CustomFieldType = newFieldType[i]
+                };
+
+                await _customFieldRepository.Add(customField);
+            }
+
+            return RedirectToAction("Collections", "Home");
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Collection(int id)
+        {
+            List<Item> items = _itemRepository.GetAll(id);
+            List<CustomField> customFields = await _customFieldRepository.GetAll(id);
+            ViewData["CustomFields"] = customFields;
+            return View(items);
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -71,80 +120,6 @@ namespace project.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public static Google.Apis.Drive.v3.DriveService GetService()
-        {
-            UserCredential credential;
-            var CSPath = System.Web.Hosting.HostingEnvironment.MapPath("~/Content/");
-
-            using (var stream = new FileStream(Path.Combine(CSPath, "client_secret.json"), FileMode.Open, FileAccess.Read))
-            {
-                string filePath = Path.Combine(CSPath, "DriveServiceCredentials.json");
-
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    System.Threading.CancellationToken.None,
-                    new FileDataStore(filePath, true)).Result;
-            }
-
-            Google.Apis.Drive.v3.DriveService service = new Google.Apis.Drive.v3.DriveService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "GoogleDriveRestAPI-v3"
-            });
-
-            return service;
-        }
-
-        public static void CreateFolderOnDrive(string Folder_Name)
-        {
-            Google.Apis.Drive.v3.DriveService service = GetService();
-
-            Google.Apis.Drive.v3.Data.File FileMetaData = new
-            Google.Apis.Drive.v3.Data.File();
-            FileMetaData.Name = Folder_Name;
-            FileMetaData.MimeType = "application/vnd.google-apps.folder";
-
-            Google.Apis.Drive.v3.FilesResource.CreateRequest request;
-
-            request = service.Files.Create(FileMetaData);
-            request.Fields = "id";
-            var file = request.Execute();
-        }
-
-        public static void FileUploadInFolder(string folderId, HttpPostedFileBase file)
-        {
-            if (file != null && file.ContentLength > 0)
-            {
-                Google.Apis.Drive.v3.DriveService service = GetService();
-
-                string path = Path.Combine(HttpContext.Current.Server.MapPath("~/GoogleDriveFiles"),
-                Path.GetFileName(file.FileName));
-                file.SaveAs(path);
-
-                var FileMetaData = new Google.Apis.Drive.v3.Data.File()
-                {
-                    Name = Path.GetFileName(file.FileName),
-                    MimeType = MimeMapping.GetMimeMapping(path),
-                    Parents = new List<string>
-                    {
-                        folderId
-                    }
-                };
-                Google.Apis.Drive.v3.FilesResource.CreateMediaUpload request;
-                using (var stream = new System.IO.FileStream(path,
-                System.IO.FileMode.Open))
-                {
-                    request = service.Files.Create(FileMetaData, stream,
-                    FileMetaData.MimeType);
-                    request.Fields = "id";
-                    request.Upload();
-                }
-                var file1 = request.ResponseBody;
-            }
         }
     }
 }

@@ -14,23 +14,23 @@ namespace project.Models.Repositories
         public CustomFieldRepository(MyDbContext context)
         {
             _context = context;
-        }   
-
-        public async Task Add(CustomField customField)
-        {
-            await _context.CustomFields.AddAsync(customField);
-
-            await Save();
         }
 
-        private async Task Save()
+        public List<CustomField> GetAll(int id)
         {
-            await _context.SaveChangesAsync();
+            return _context.CustomFields.Where(cf => cf.CollectionId == id).ToList();
         }
 
-        public async Task<List<CustomField>> GetAll(int id)
+        public void Add(CustomField customField)
         {
-            return await _context.CustomFields.Where(cf => cf.CollectionId == id).ToListAsync();
+            _context.CustomFields.Add(customField);
+
+            Save();
+        }
+
+        private void Save()
+        {
+            _context.SaveChanges();
         }
     }
 }

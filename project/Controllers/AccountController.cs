@@ -18,13 +18,11 @@ namespace project.Controllers
     {
         private readonly UserRepository userRepository;
         private readonly SignInManager<User> signInManager;
-        private readonly UserManager<User> userManager;
 
-        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, UserRepository userRepository)
+        public AccountController(SignInManager<User> signInManager, UserRepository userRepository)
         {
             this.signInManager = signInManager;
             this.userRepository = userRepository;
-            this.userManager = userManager;
         }
 
         [HttpGet]
@@ -104,7 +102,7 @@ namespace project.Controllers
                 Role = RoleUser.User
             };
 
-            User checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
+            User checkUser = userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
 
             if (checkUser == null)
             {
@@ -127,7 +125,7 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrationUser(string userName, string email, string password)
         {
-            User user = await userRepository.GetUserByEmail(email);
+            User user = userRepository.GetUserByEmail(email);
 
             if (user == null)
             {

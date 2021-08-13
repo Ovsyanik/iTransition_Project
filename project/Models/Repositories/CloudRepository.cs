@@ -12,7 +12,7 @@ namespace project.Models.Repositories
         private string apiKey = "678355628328799";
         private string apiSecret = "Nc6G5_no7niQ-eTRZp_ptXezN6w";
 
-        public async Task<string> UploadPhoto(Stream stream)
+        public string UploadPhoto(Stream stream)
         {
             Account account = new Account(apiName, apiKey, apiSecret);
 
@@ -22,7 +22,7 @@ namespace project.Models.Repositories
                 File = new FileDescription(Guid.NewGuid().ToString(), stream),
             };
 
-            ImageUploadResult uploadResult = await cloudinary.UploadAsync(uploadParams);
+            ImageUploadResult uploadResult = cloudinary.Upload(uploadParams);
 
             Transformation transformation = new Transformation().Width(960).Height(600).Crop("fill");
 

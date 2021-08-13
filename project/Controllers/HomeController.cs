@@ -43,17 +43,25 @@ namespace project.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Collections()
+        public IActionResult Collections()
         {
             List<Collection> collection = _collectionRepository.GetAllByUser(
-               await _userRepository.GetUserByEmail(User.Identity.Name)
-                );
+                _userRepository.GetUserByEmail(User.Identity.Name));
             return View(collection);
         }
 
 
         [HttpGet]
-        public IActionResult AddItem()
+        public IActionResult AddItem(int id)
+        {
+            ViewData["CollectionId"] = id;
+            ViewData["CustomFields"] = _customFieldRepository.GetAll(id);
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult AddItem(string name, string tags, string[] customField)
         {
             return View();
         }
@@ -67,14 +75,14 @@ namespace project.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> AddCollectionPost(IFormFile files, string description, string name, TypeItem theme, string[] field, CustomFieldType[] newFieldType)
+        public IActionResult AddCollectionPost(IFormFile files, string description, string name, TypeItem theme, string[] field, CustomFieldType[] newFieldType)
         {
-            int idCollection = await _collectionRepository.Add(new Collection(
+            int idCollection = _collectionRepository.Add(new Collection(
                 name, 
                 description, 
                 theme,
-                await _googleRepositoy.UploadPhoto(files.OpenReadStream()),
-                await _userRepository.GetUserByEmail(User.Identity.Name)));
+                _googleRepositoy.UploadPhoto(files.OpenReadStream()),
+                _userRepository.GetUserByEmail(User.Identity.Name)));
 
             for(int i = 0; i < field.Length; i++)
             {
@@ -84,7 +92,7 @@ namespace project.Controllers
                     CustomFieldType = newFieldType[i]
                 };
 
-                await _customFieldRepository.Add(customField);
+                _customFieldRepository.Add(customField);
             }
 
             return RedirectToAction("Collections", "Home");
@@ -92,11 +100,12 @@ namespace project.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Collection(int id)
+        public IActionResult Collection(int id)
         {
             List<Item> items = _itemRepository.GetAll(id);
-            List<CustomField> customFields = await _customFieldRepository.GetAll(id);
+            List<CustomField> customFields = _customFieldRepository.GetAll(id);
             ViewData["CustomFields"] = customFields;
+            ViewData["CollectionId"] = id;
             return View(items);
         }
 

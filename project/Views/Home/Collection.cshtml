@@ -1,6 +1,7 @@
 ﻿@{
     List<Item> items = Model;
     List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
+    int collectionId = ((int)ViewData["CollectionId"]);
 }
 
 @section Header {
@@ -25,7 +26,6 @@
             <ul class="navbar-nav flex-grow-1">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <p>@User.Identity.Name</p>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
                     </li>
@@ -44,7 +44,7 @@
     </div>
 }
 
-<a class="btn btn-info" asp-controller="Home" asp-action="AddItem">Добавить элемент</a>
+<a class="btn btn-info" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Добавить элемент</a>
 
 <table class="table" id="table">
     <thead class="thead-light">

@@ -52,9 +52,9 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> Collections()
         {
-            List<Collection> collection = _collectionRepository.GetAllByUser(
+            List<Collection> collections = _collectionRepository.GetAllByUser(
                 await _userRepository.GetUserByEmail(User.Identity.Name));
-            return View(collection);
+            return View(collections);
         }
 
 
@@ -101,6 +101,26 @@ namespace project.Controllers
 
 
         [HttpGet]
+        public async Task<IActionResult> EditCollection(int id)
+        {
+            Collection collection = await _collectionRepository.GetByIdAsync(id);
+            return View("AddCollection", collection);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteCollection(int id)
+        {
+            await _customFieldRepository.DeleteValuesByIdAsync(id);
+            await _customFieldRepository.DeleteByIdAsync(id);
+            await _itemRepository.DeleteAsync(id);
+            await _collectionRepository.DeleteAsync(id);
+
+            return RedirectToAction("Collections");
+        }
+
+
+        [HttpGet]
         public IActionResult AddCollection()
         {
             return View();
@@ -110,12 +130,23 @@ namespace project.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCollectionPost(IFormFile files, string description, string name, TypeItem theme, string[] field, CustomFieldType[] newFieldType)
         {
-            int idCollection = await _collectionRepository.AddAsync(new Collection(
-                name, 
-                description, 
-                theme,
-                _googleRepositoy.UploadPhoto(files.OpenReadStream()),
-                await _userRepository.GetUserByEmail(User.Identity.Name)));
+            int idCollection;
+            if (files != null)
+            {
+                idCollection = await _collectionRepository.AddAsync(new Collection(
+                    name,
+                    description,
+                    theme,
+                    _googleRepositoy.UploadPhoto(files.OpenReadStream()),
+                    await _userRepository.GetUserByEmail(User.Identity.Name)));
+            } else
+            {
+                idCollection = await _collectionRepository.AddAsync(new Collection(
+                    name,
+                    description,
+                    theme,
+                    await _userRepository.GetUserByEmail(User.Identity.Name)));
+            }
 
             for(int i = 0; i < field.Length; i++)
             {

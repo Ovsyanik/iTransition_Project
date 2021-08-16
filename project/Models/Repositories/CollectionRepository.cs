@@ -1,4 +1,5 @@
-﻿using project.Models.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using project.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,23 +16,37 @@ namespace project.Models.Repositories
             _context = context;
         }
 
+        public async Task<Collection> GetByIdAsync(int id)
+        {
+            return await _context.Collections.Include(col => col.Fields)
+                .FirstOrDefaultAsync(col => col.Id == id);
+        }
+
         public List<Collection> GetAllByUser(User user)
         {
-            return _context.Collections.Where(col => col.User.Id == user.Id).ToList();
+            return _context.Collections
+                .Where(col => col.User.Id == user.Id).ToList();
         }
 
         public async Task<int> AddAsync(Collection collection)
         {
             await _context.Collections.AddAsync(collection);
-            await Save();
+            await SaveAsync();
             return collection.Id;
         }
 
-        private async Task Save()
+
+        public async Task DeleteAsync(int id)
         {
-            await _context.SaveChangesAsync();
+            Collection collection = await GetByIdAsync(id);
+            _context.Collections.Remove(collection);
+            await SaveAsync();
         }
 
 
+        private async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

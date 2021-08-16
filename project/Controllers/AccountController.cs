@@ -27,37 +27,33 @@ namespace project.Controllers
             this.userRepository = userRepository;
         }
 
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Authentication(string returnUrl = "~/")
+        public IActionResult Authentication()
         {
-            LoginViewModel model = new LoginViewModel
-            {
-                ReturnUrl = returnUrl,
-                ExternalLogins =
-                (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
-            };
-
-            return View(model);
+            return View();
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public  IActionResult AuthenticationUser(string email, string password)
-        //{
-        //    IdentityUser user = userRepository.Authenticate(email, password);
 
-        //    if (user != null)
-        //    {
-        //        Authenticate(user.Email);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AuthenticationUser(string email, string password)
+        {
+            IdentityUser user = await userRepository.AuthenticateAsync(email, password);
 
-        //        return RedirectToAction("Index", "Home", new { email = email });
-        //    }
-        //    else
-        //    {
-        //        return RedirectToAction("Authentication", "Account");
-        //    }
-        //}
+            if (user != null)
+            {
+                await Authenticate(user.Email);
+
+                return RedirectToAction("Index", "Home", new { email = email });
+            }
+            else
+            {
+                return RedirectToAction("Authentication", "Account");
+            }
+        }
+
 
         [HttpGet]
         public IActionResult Registration()
@@ -65,47 +61,59 @@ namespace project.Controllers
             return View();
         }
 
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult ExternalLogin(string provider, string returnUrl)
-        {
-                var redirectUrl = Url.Action("ExternalLoginCallback", "Account",
-                    new { ReturnUrl = returnUrl });
-
-                var properties =
-                    signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-
-                return new ChallengeResult(provider, properties);
-            
-        }
-
 
         [AllowAnonymous]
         public IActionResult GoogleLogin()
         {
-            string redirectUrl = Url.Action("GoogleResponse", "Account");
+            string redirectUrl = Url.Action("ExternalResponse", "Account");
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return new ChallengeResult("Google", properties);
         }
 
 
         [AllowAnonymous]
-        public async Task<IActionResult> GoogleResponse()
+        public IActionResult FacebookLogin()
+        {
+            string redirectUrl = Url.Action("ExternalResponse", "Account");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Facebook", redirectUrl);
+            return new ChallengeResult("Facebook", properties);
+        }
+
+
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalResponse()
         {
             ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
+            if (info.LoginProvider == "Facebook")
+                await Authenticate(info.Principal.FindFirstValue(ClaimTypes.NameIdentifier));
+            else
+                await Authenticate(info.Principal.FindFirstValue(ClaimTypes.Email));
 
-            await Authenticate(info.Principal.FindFirst(ClaimTypes.Email).Value);
+            User user, checkUser;
 
-            User user = new User
+            if (info.LoginProvider == "Google")
             {
-                Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
-                UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
-                Provider = info.LoginProvider,
-                Role = RoleUser.User
-            };
+                user = new User
+                {
+                    Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
+                    UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
+                    Provider = info.LoginProvider,
+                    Role = RoleUser.User
+                };
 
-            User checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
+                checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
+            } else
+            {
+                user = new User
+                {
+                    Email = info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value,
+                    UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
+                    Provider = info.LoginProvider,
+                    Role = RoleUser.User
+                };
 
+                checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value);
+            }
             if (checkUser == null)
             {
                 await userRepository.RegisterAsync(user);
@@ -117,6 +125,8 @@ namespace project.Controllers
 
         public async Task<IActionResult> SignOut()
         {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return RedirectToAction("Authentication", "Account");

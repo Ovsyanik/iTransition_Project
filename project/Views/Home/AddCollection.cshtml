@@ -1,5 +1,15 @@
 ﻿@{
     CustomFieldType[] customFieldTypes = (CustomFieldType[])Enum.GetValues(typeof(CustomFieldType));
+    List<SelectListItem> selectListItems = new List<SelectListItem>();
+    foreach(var type in customFieldTypes)
+    {
+        selectListItems.Add(new SelectListItem {Value = type.ToString(), Text = type.ToString() });
+    }
+    Collection collection = new Collection();
+    if(Model != null)
+    {
+        collection = Model;
+    }
 }
 
 <link href="../dropzone/dist/min/dropzone.min.css" rel="stylesheet">
@@ -44,17 +54,19 @@
     </div>
 }
 
-<p class="text-center">Добавить коллекцию</p>
+<h1 class="text-center">Добавить коллекцию</h1>
 
 <form method="post" asp-controller="Home" asp-action="AddCollectionPost" enctype="multipart/form-data">
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
-    </div>
+        <input type="text" class="form-control" id="name" name="name" 
+               value="@collection.Name" placeholder="Enter name">
+        </div>
 
     <div class="form-group">
         <label for="theme">Theme</label>
-        <select id="theme" name="theme" class="form-control selectpicker" data-style="btn-success" required>
+        <select id="theme" name="theme" class="form-control selectpicker" 
+                data-style="btn-success" required>
             <option>@TypeItem.Books</option>
             <option>@TypeItem.NewPapers</option>
             <option>@TypeItem.Stamps</option>
@@ -63,7 +75,8 @@
 
     <div class="form-group">
         <label for="description">Description</label>
-        <input type="text" class="form-control" id="description" name="description" placeholder="Enter description">
+        <input type="text" class="form-control" id="description" value="@collection.Description"
+               name="description" placeholder="Enter description">
     </div>
 
     <input type="file" name="files" id="files" />
@@ -73,21 +86,37 @@
             <strong>Drag and Drop Files Here</strong>
         </div>
     </div>
+
     <div class="row">
         <div class="col-3">
             <input type="button" class="btn btn-primary" value="Добавить поле" onclick="newField(@Html.Raw(Json.Serialize(customFieldTypes)))" />
         </div>
-        <div id="fields" class="col-9"></div>
+        <div id="fields" class="col-9">
+            @if (collection.Fields != null)
+            {
+                foreach (CustomField field in collection.Fields)
+                {
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="description" value="@field.Title"
+                               name="field" placeholder="Enter Field">
+                        <select asp-for="@field.CustomFieldType" asp-items='@selectListItems' 
+                                class="form-control selectpicker" data-style="btn-success"></select>
+                    </div>
+                }
+            }
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
+
+
+
+
 @section Scripts {
     <script>
-        let customFieldCount = 0;
         function callondrop(e) {
-
             e.preventDefault();
             if ((e.dataTransfer && e.dataTransfer.files) || (e.dataTransfer && e.dataTransfer.files)) {
                 var files = e.target.files || e.dataTransfer.files;
@@ -132,33 +161,3 @@
         }
     </script>
 }
-
-@*@section Scripts {
-
-            let field = document.createElement("input");
-            field.setAttribute("class", "form-control");
-            field.setAttribute("id", "Field[" + nextFieldId + "]");
-            field.setAttribute("name", "newField");
-            field.setAttribute("type", "text");
-
-            //let typeField = document.createElement("select");
-            //typeField.setAttribute("class", "form-control selectpicker");
-            //typeField.setAttribute("id", "FieldsType[" + nextFieldId + "]");
-            //typeField.setAttribute("name", "newFieldType");
-            //typeField.setAttribute("data-style", "btn-success");
-
-            //for (let i = 0; i < customFieldTypes.length; i++) {
-            //    let typeFieldTypes = document.createElement("option");
-            //    typeFieldTypes.innerHTML = customFieldTypes[i];
-            //    typeField.appendChild(typeFieldTypes);
-            //}
-
-
-
-            div.appendChild(field);
-            /*        div.appendChild(typeField);*/
-
-            container.appendChild(div);
-        }
-    </script>
-}*@

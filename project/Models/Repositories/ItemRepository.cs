@@ -16,11 +16,30 @@ namespace project.Models.Repositories
             _context = context;
         }
 
+        public async Task<List<Item>> GetLastItemsAsync()
+        {
+            return await _context.Items
+                .Include(i => i.Likes)
+                .OrderByDescending(i => i.Id).Take(5).ToListAsync();
+        }
+
         public async Task<List<Item>> GetAllAsync(int id)
         {
-            List<Item> items = await _context.Items.Where(item => item.CollectionId == id).Include(item => item.CustomFieldValues).ToListAsync();
+            return await _context.Items
+                .Where(item => item.CollectionId == id)
+                .Include(item => item.CustomFieldValues)
+                .Include(Item => Item.Tags).ToListAsync();
+        }
 
-            return items;
+
+        public async Task<List<Item>> SearchItems(string query)
+        {
+            return await _context.Items.Where(i => 
+                EF.Functions.FreeText(i.Name, query) || 
+                EF.Functions.FreeText(i.Collection.Description, query) || 
+                i.Comments.Any(c => EF.Functions.FreeText(c.Text, query)) || 
+                i.CustomFields.Any(f => EF.Functions.FreeText(f.Title, query)))
+                .ToListAsync();
         }
 
         public async Task<Guid> AddAsync(Item item)
@@ -37,8 +56,10 @@ namespace project.Models.Repositories
             await SaveAsync();
         }
 
-        public async Task Delete(Item item)
+        public async Task DeleteAsync(int collectionId)
         {
+            List<Item> items = await GetAllAsync(collectionId);
+            items.ForEach(item => _context.Items.Remove(item));
             await SaveAsync();
         }
 

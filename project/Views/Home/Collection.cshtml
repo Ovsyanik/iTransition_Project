@@ -45,7 +45,27 @@
     </div>
 }
 
-<a class="btn btn-info" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Добавить элемент</a>
+<a class="btn btn-primary" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Добавить элемент</a>
+
+<a class="btn btn-primary" asp-controller="Home" asp-action="EditCollection" asp-route-id="@collectionId">Изменить коллекцию</a>
+
+<button class="btn btn-primary" onclick="showModal()">Удалить коллекцию</button>
+
+<div class="modal fade bs-example-modal-sm" tabindex="-1" id="modal" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Удалить коллекцию?</h4>
+            </div>
+            <div class="modal-body">
+                <h4 class="modal-content">После удаления вы потеряете все данные</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="window.location.href = '@Url.Action("DeleteCollection", "Home")?id=' + @collectionId" class="btn btn-primary">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <table class="table" id="table">
     <thead class="thead-light">
@@ -53,7 +73,7 @@
             <th scope="col">Id</th>
             <th scope="col">Name</th>
             <th scope="col">Tags</th>
-            @foreach(CustomField customField in customFields)
+            @foreach (CustomField customField in customFields)
             {
                 <th scope="col">@customField.Title</th>
             }
@@ -62,22 +82,31 @@
     <tbody>
         @if (items != null)
         {
-            foreach(Item item in items)
+            foreach (Item item in items)
             {
                 <tr>
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.Tags</td>
-                    @if(item.CustomFieldValues != null)
+                    @if (item.CustomFieldValues != null)
                     {
-                        foreach(CustomFieldValue customField in item.CustomFieldValues)
+                        foreach (CustomFieldValue customField in item.CustomFieldValues)
                         {
                             <td>@customField.Value</td>
                         }
                     }
-                
+
                 </tr>
             }
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        function showModal() {
+            $('#modal').modal();
+        }
+    </script>
+
+}

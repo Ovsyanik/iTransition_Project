@@ -13,6 +13,8 @@ namespace project.Models.Entities
         
         public int CollectionId { get; set; }
 
+        public Collection Collection { get; set; }
+
         public CustomFieldType CustomFieldType { get; set; }
     }
 }

@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace project.Models.Entities
 {
-    public class Tags
+    public class Like
     {
         public int Id { get; set; }
 
-        public string Value { get; set; }
+        public string Username { get; set; }
 
-        public Guid? ItemId { get; set; }
-
+        public int ItemID { get; set; }
+        
         public Item Item { get; set; }
     }
 }

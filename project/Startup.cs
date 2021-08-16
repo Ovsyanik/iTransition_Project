@@ -41,13 +41,6 @@ namespace project
                 .AddEntityFrameworkStores<MyDbContext>();
 
 
-            //services.AddAuthentication()
-            //    .AddOAuth("VK", "VKontakte", options =>
-            //    {
-            //        options.ClientId = Configuration["Authentication:Vk:AppId"];
-            //        options.ClientSecret = Configuration["Authentication:Vk:AppSecret"];
-            //    });
-
             services
                 .AddAuthentication(options =>
                 {
@@ -59,6 +52,7 @@ namespace project
                 {
                     facebookOptions.AppId = Configuration["Authentication:Facebook:AppId"];
                     facebookOptions.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                    facebookOptions.SignInScheme = IdentityConstants.ExternalScheme;
                 })
                 .AddGoogle(googleOptions =>
                 {
@@ -72,7 +66,7 @@ namespace project
                 });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

@@ -42,6 +42,23 @@ namespace project.Models.Repositories
             return value;
         }
 
+
+        public async Task DeleteValuesByIdAsync(int collectionId)
+        {
+            List<CustomFieldValue> values = await GetAllValuesAsync(collectionId);
+            values.ForEach(value => _context.CustomFieldValues.Remove(value));
+            await SaveAsync();
+        }
+
+
+        public async Task DeleteByIdAsync(int collectionId)
+        {
+            List<CustomField> fields = await GetAllAsync(collectionId);
+            fields.ForEach(field => _context.CustomFields.Remove(field));
+            await SaveAsync();
+        }
+
+
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();

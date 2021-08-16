@@ -81,14 +81,13 @@ namespace project.Controllers
             List<CustomFieldValue> fields = new List<CustomFieldValue>();
             for (int i = 0; i < customFieldValue.Length; i++)
             {
-                CustomFieldValue id = await _customFieldRepository.AddCustomFieldValueAsync(
+                fields.Add(await _customFieldRepository.AddCustomFieldValueAsync(
                     new CustomFieldValue
                     {
                         Value = customFieldValue[i],
                         CustomField = customField[i],
                         CollectionId = collectionId
-                    });
-                fields.Add(id);
+                    }));
             }
 
             await _itemRepository.AddAsync(new Item { 
@@ -150,13 +149,12 @@ namespace project.Controllers
 
             for(int i = 0; i < field.Length; i++)
             {
-                CustomField customField = new CustomField {
+                await _customFieldRepository.AddAsync(new CustomField
+                {
                     CollectionId = idCollection,
                     Title = field[i],
                     CustomFieldType = newFieldType[i]
-                };
-
-                await _customFieldRepository.AddAsync(customField);
+                });
             }
 
             return RedirectToAction("Collections", "Home");
@@ -166,12 +164,11 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> Collection(int id)
         {
-            List<Item> items = await _itemRepository.GetAllAsync(id);
-            List<CustomField> customFields = await _customFieldRepository.GetAllAsync(id);
-            ViewData["CustomFields"] = customFields;
+            ViewData["CustomFields"] = await _customFieldRepository.GetAllAsync(id);
             ViewData["CollectionId"] = id;
-            return View(items);
+            return View(await _itemRepository.GetAllAsync(id));
         }
+
 
         [HttpGet]
         [AllowAnonymous]

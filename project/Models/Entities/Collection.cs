@@ -17,8 +17,6 @@ namespace project.Models.Entities
 
         public User User { get; set; }
 
-        public virtual List<Item> Items { get; set; }
-
         public virtual ICollection<CustomField> Fieds { get; set; }
 
         public Collection() { }

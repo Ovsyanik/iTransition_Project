@@ -19,7 +19,9 @@ namespace project.Controllers
         private readonly UserRepository userRepository;
         private readonly SignInManager<User> signInManager;
 
-        public AccountController(SignInManager<User> signInManager, UserRepository userRepository)
+        public AccountController(
+            SignInManager<User> signInManager, 
+            UserRepository userRepository)
         {
             this.signInManager = signInManager;
             this.userRepository = userRepository;
@@ -39,23 +41,23 @@ namespace project.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AuthenticationUser(string email, string password)
-        {
-            IdentityUser user = await userRepository.Authenticate(email, password);
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public  IActionResult AuthenticationUser(string email, string password)
+        //{
+        //    IdentityUser user = userRepository.Authenticate(email, password);
 
-            if (user != null)
-            {
-                await Authenticate(user.Email);
+        //    if (user != null)
+        //    {
+        //        Authenticate(user.Email);
 
-                return RedirectToAction("Index", "Home", new { email = email });
-            }
-            else
-            {
-                return RedirectToAction("Authentication", "Account");
-            }
-        }
+        //        return RedirectToAction("Index", "Home", new { email = email });
+        //    }
+        //    else
+        //    {
+        //        return RedirectToAction("Authentication", "Account");
+        //    }
+        //}
 
         [HttpGet]
         public IActionResult Registration()
@@ -91,7 +93,7 @@ namespace project.Controllers
         public async Task<IActionResult> GoogleResponse()
         {
             ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
-             
+
             await Authenticate(info.Principal.FindFirst(ClaimTypes.Email).Value);
 
             User user = new User
@@ -102,11 +104,11 @@ namespace project.Controllers
                 Role = RoleUser.User
             };
 
-            User checkUser = userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
+            User checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
 
             if (checkUser == null)
             {
-                await userRepository.Register(user);
+                await userRepository.RegisterAsync(user);
             }
 
             return RedirectToAction("Index", "Home");
@@ -125,7 +127,7 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrationUser(string userName, string email, string password)
         {
-            User user = userRepository.GetUserByEmail(email);
+            User user = await userRepository.GetUserByEmail(email);
 
             if (user == null)
             {
@@ -137,7 +139,7 @@ namespace project.Controllers
                     Role = RoleUser.User
                 };
 
-                await userRepository.Register(newUser);
+                await userRepository.RegisterAsync(newUser);
 
                 return RedirectToAction("Authentication", "Account");
             }

@@ -10,7 +10,6 @@ using Microsoft.Extensions.Hosting;
 using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
-using System;
 
 namespace project
 {
@@ -28,10 +27,11 @@ namespace project
         {
             services.AddControllersWithViews();
 
-            services.AddTransient<ItemRepository>();
-            services.AddTransient<UserRepository>();
+            services.AddScoped<ItemRepository>();
+            services.AddScoped<UserRepository>();
             services.AddTransient<CloudRepository>();
-            services.AddTransient<CollectionRepository>();
+            services.AddScoped<TagRepository>();
+            services.AddScoped<CollectionRepository>();
             services.AddTransient<CustomFieldRepository>();
 
             services.AddDbContext<MyDbContext>(options =>

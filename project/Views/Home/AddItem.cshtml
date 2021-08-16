@@ -46,6 +46,7 @@
 <p class="text-center">Добавить элемент</p>
 
 <form method="post" asp-controller="Home" asp-action="AddItem">
+    <input type="hidden" name="collectionId" value="@collectionId">
     <div class="form-group">
         <label for="name">Name</label>
         <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
@@ -58,9 +59,11 @@
 
     @foreach (CustomField customField in customFields)
     {
+        <input type="text" name="customField" value="@customField.Id" style="display: none;">
+
         <div class="form-group">
             <label for="@customField.Title">@customField.Title</label>
-            <input type="text" class="form-control" id="@customField.Title" name="customField" placeholder="Enter @customField.Title">
+            <input type="text" class="form-control" id="@customField.Title" name="customFieldValue" placeholder="Enter @customField.Title">
         </div>
     }
 

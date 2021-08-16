@@ -11,12 +11,12 @@ namespace project.Models.Entities
 
         public string Name { get; set; }
 
-        public List<Tags> Tags { get; set; }
+        public int CollectionId { get; set; }
 
-        public int CustomFieldId { get; set; } 
+        public virtual ICollection<CustomField> CustomFieldId { get; set; }
 
-        public string CustomFieldValue { get; set; }
+        public virtual List<CustomFieldValue> CustomFieldValues { get; set; }
 
-        public virtual ICollection<CustomField> Fields { get; set; }
+        public virtual ICollection<Tags> Tags { get; set; }
     }
 }

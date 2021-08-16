@@ -1,6 +1,7 @@
 ﻿@{
     List<Item> items = Model;
     List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
+    List<CustomFieldValue> customFieldValues = ViewData["CustomFieldValues"] as List<CustomFieldValue>;
     int collectionId = ((int)ViewData["CollectionId"]);
 }
 
@@ -61,18 +62,20 @@
     <tbody>
         @if (items != null)
         {
-            foreach (Item item in items)
+            foreach(Item item in items)
             {
                 <tr>
-                    <td>
-                        <div class="form-check">
-                            <input class="form-check-input check"
-                               type="checkbox">
-                        </div>
-                    </td>
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.Tags</td>
+                    @if(item.CustomFieldValues != null)
+                    {
+                        foreach(CustomFieldValue customField in item.CustomFieldValues)
+                        {
+                            <td>@customField.Value</td>
+                        }
+                    }
+                
                 </tr>
             }
         }

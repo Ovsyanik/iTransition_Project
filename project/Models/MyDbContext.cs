@@ -9,7 +9,7 @@ namespace project.Models
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
-            Database.EnsureCreatedAsync();
+            Database.EnsureCreated();
         }
 
         public DbSet<Item> Items { get; set; }

@@ -16,21 +16,35 @@ namespace project.Models.Repositories
             _context = context;
         }
 
-        public List<CustomField> GetAll(int id)
+        public async Task<List<CustomField>> GetAllAsync(int id)
         {
-            return _context.CustomFields.Where(cf => cf.CollectionId == id).ToList();
+            return await _context.CustomFields.Where(cf => cf.CollectionId == id).ToListAsync();
         }
 
-        public void Add(CustomField customField)
+        public async Task<List<CustomFieldValue>> GetAllValuesAsync(int collectionId)
         {
-            _context.CustomFields.Add(customField);
-
-            Save();
+            return await _context.CustomFieldValues
+                .Where(cf => cf.CollectionId == collectionId)
+                .ToListAsync();
         }
 
-        private void Save()
+        public async Task AddAsync(CustomField customField)
         {
-            _context.SaveChanges();
+            await _context.CustomFields.AddAsync(customField);
+            await SaveAsync();
+        }
+
+        public async Task<CustomFieldValue> AddCustomFieldValueAsync(CustomFieldValue value)
+        {
+            await _context.CustomFieldValues.AddAsync(value);
+            await SaveAsync();
+
+            return value;
+        }
+
+        private async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

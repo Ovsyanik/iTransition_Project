@@ -20,16 +20,16 @@ namespace project.Models.Repositories
             return _context.Collections.Where(col => col.User.Id == user.Id).ToList();
         }
 
-        public int Add(Collection collection)
+        public async Task<int> AddAsync(Collection collection)
         {
-            _context.Collections.Add(collection);
-            Save();
+            await _context.Collections.AddAsync(collection);
+            await Save();
             return collection.Id;
         }
 
-        private void Save()
+        private async Task Save()
         {
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
 

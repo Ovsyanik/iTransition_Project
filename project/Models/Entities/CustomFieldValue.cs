@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 
 namespace project.Models.Entities
 {
-    public class CustomFieldValue : CustomField
+    public class CustomFieldValue
     {
         public int Id { get; set; }
 
+        public int CustomField { get; set; } 
+
+        public string Value { get; set; }
+
         public int CollectionId { get; set; }
 
-        public int customField { get; set; } 
-
-        public int Value { get; set; }
+        public Item Item { get; set; }
     }
 }

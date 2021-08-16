@@ -1,4 +1,5 @@
-﻿using project.Models.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using project.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,38 +16,40 @@ namespace project.Models.Repositories
             _context = context;
         }
 
-        public List<Item> GetAll(int id)
+        public async Task<List<Item>> GetAllAsync(int id)
         {
-            Collection collection = _context.Collections.Where(col => col.Id == id).FirstOrDefault();
+            List<Item> items = await _context.Items.Where(item => item.CollectionId == id).Include(item => item.CustomFieldValues).ToListAsync();
 
-            return collection.Items;
+            return items;
         }
 
-        public async Task Add(Item item)
+        public async Task<Guid> AddAsync(Item item)
         {
+            await _context.AddAsync(item);
+            await SaveAsync();
 
-            await Save();
+            return item.Id;
         }
 
         public async Task Change(Item item)
         {
 
-            await Save();
+            await SaveAsync();
         }
 
         public async Task Delete(Item item)
         {
-            await Save();
+            await SaveAsync();
         }
 
-        private async Task Save()
+        private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
         }
 
         public async Task<List<Collection>> GetCollections()
         {
-            return new List<Collection>();   
+            return new List<Collection>(); 
         }
 
 

@@ -1,4 +1,4 @@
-﻿@{ 
+﻿@{
     List<User> users = Model;
 }
 
@@ -72,6 +72,49 @@
                 <td>@user.UserName</td>
                 <td>@user.Email</td>
                 <td>@user.Role</td>
+
+                @if (!user.LockoutEnabled || user.LockoutEnd < DateTime.Now)
+                {
+                    <td>
+                        @Html.ActionLink(
+                        "Block",
+                        "BlockUser",
+                        "Admin",
+                        new { id = user.Id },
+                        new { @class = "btn btn-danger" })
+                    </td>
+                    if (user.Role == RoleUser.User)
+                    {
+                        <td>
+                            @Html.ActionLink(
+                            "Promote to admin",
+                            "PromoteUserToAdmin",
+                            "Admin",
+                            new { id = user.Id },
+                            new { @class = "btn btn-primary" })
+                        </td>
+                    }
+
+                }
+                else if (user.LockoutEnabled && user.LockoutEnd > DateTime.Now)
+                {
+                    <td>
+                        @Html.ActionLink(
+                        "Unblock",
+                        "UnblockUser",
+                        "Admin",
+                        new { id = user.Id },
+                        new { @class = "btn btn-warning" })
+                    </td>
+                    <td>
+                        @Html.ActionLink(
+                        "Delete",
+                        "DeleteUser",
+                        "Admin",
+                        new { id = user.Id },
+                        new { @class = "btn btn-danger" })
+                    </td>
+                }
             </tr>
         }
     </tbody>

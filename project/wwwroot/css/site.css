@@ -69,3 +69,41 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
+
+.search:after {
+    content: "";
+    clear: both;
+    display: table
+}
+
+.search form {
+    width: auto;
+    float: right;
+    margin-right: 30px;
+}
+
+.search input {
+    width: 250px;
+    height: 42px;
+    padding-left: 15px;
+    border-radius: 42px;
+    border: 1px solid;
+    outline: none;
+    position: relative;
+}
+
+.search .ser-button {
+    width: 42px;
+    height: 42px;
+    background: none;
+    z-index: 10;
+    border: none;
+    position: absolute;
+    margin: auto 210px;
+    float: right;
+    color: #324b4e;
+}
+
+    .search .ser-button:before {
+        color: #324b4e;
+    }

@@ -16,10 +16,16 @@ namespace project.Models.Repositories
             _context = context;
         }
 
-        public async Task<User> GetUserByEmail(string email)
+        public async Task<User> GetUserByNameAsync(string name)
         {
-            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            return user;
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == name);
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<List<User>> GetAllAsync()
@@ -79,9 +85,6 @@ namespace project.Models.Repositories
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
-        }
-
-
-        
+        }      
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
+using System.Globalization;
 
 namespace project
 {
@@ -22,10 +24,12 @@ namespace project
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddLocalization(options => 
+                options.ResourcesPath = "Resources");
+            services.AddControllersWithViews()
+                .AddViewLocalization();
 
             services.AddScoped<ItemRepository>();
             services.AddScoped<UserRepository>();
@@ -39,7 +43,6 @@ namespace project
 
             services.AddDefaultIdentity<User>()
                 .AddEntityFrameworkStores<MyDbContext>();
-
 
             services
                 .AddAuthentication(options =>
@@ -77,6 +80,20 @@ namespace project
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            var supportedCultures = new[]
+            {
+                new CultureInfo("en"),
+                new CultureInfo("ru")
+            };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("ru"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
+            });
+
             app.UseStaticFiles();
 
             app.UseRouting();

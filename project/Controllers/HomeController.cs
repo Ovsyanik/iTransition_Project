@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Text;
 
 namespace project.Controllers
 {
@@ -19,7 +20,7 @@ namespace project.Controllers
     {
         private readonly ItemRepository _itemRepository;
         private readonly UserRepository _userRepository;
-        private readonly CloudRepository _googleRepositoy;
+        private readonly CloudRepository _googleRepository;
         private readonly TagRepository _tagRepository;
         private readonly CollectionRepository _collectionRepository;
         private readonly CustomFieldRepository _customFieldRepository;
@@ -35,7 +36,7 @@ namespace project.Controllers
             _tagRepository = tagRepository;
             _itemRepository = itemReposetory;
             _userRepository = userRepository;
-            _googleRepositoy = googleRepository;
+            _googleRepository = googleRepository;
             _collectionRepository = collectionRepository;
             _customFieldRepository = customFieldRepository;
         }
@@ -43,17 +44,22 @@ namespace project.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(_itemRepository.GetCollections());
+            ViewData["LastItems"] = await _itemRepository.GetLastItemsAsync();
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
+            return View();
         }
 
 
         [HttpGet]
         public async Task<IActionResult> Collections()
         {
-            List<Collection> collections = _collectionRepository.GetAllByUser(
-                await _userRepository.GetUserByEmail(User.Identity.Name));
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            var collections = _collectionRepository.GetAllByUser(user);
+            
+            ViewData["User"] = user;
             return View(collections);
         }
 
@@ -61,21 +67,22 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> AddItem(int id)
         {
+            var fields = await _customFieldRepository.GetAllAsync(id);
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             ViewData["CollectionId"] = id;
-            ViewData["CustomFields"] = await _customFieldRepository.GetAllAsync(id);
+            ViewData["CustomFields"] = fields;
             return View();
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> AddItem(int collectionId,  string name, string tags, int[] customField, string[] customFieldValue)
+        public async Task<IActionResult> AddItem(int collectionId,  string name, string[] tags, int[] customField, string[] customFieldValue)
         {
-            string[] tags1 = tags.Replace(" ", "").Split(",");
             List<Tags> tags2 = new List<Tags>();
-            foreach(string s in tags1)
+            foreach(string tag in tags)
             {
-                Tags tag = _tagRepository.Add(new Tags { Value = s });
-                tags2.Add(tag);
+                tags2.Add(await _tagRepository.AddAsync(new Tags { Value = tag }));
             }
 
             List<CustomFieldValue> fields = new List<CustomFieldValue>();
@@ -90,7 +97,7 @@ namespace project.Controllers
                     }));
             }
 
-            await _itemRepository.AddAsync(new Item { 
+            await _itemRepository.AddAsync(collectionId, new Item { 
                 Tags = tags2, 
                 Name = name, 
                 CollectionId = collectionId, 
@@ -99,11 +106,52 @@ namespace project.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int itemId, string text)
+        {
+            string name = User.Identity.Name;
+            Item item = await _itemRepository.AddCommentAsync(itemId, text, name);
+            return RedirectToAction("Item", new { id = item.Id});
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> AddLike(int id)
+        {
+            string name = User.Identity.Name;
+            Item item = await _itemRepository.AddOrDeleteLikeAsync(id, name);
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
+            return RedirectToAction("Item", new { id = item.Id });
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> EditCollection(int id)
         {
             Collection collection = await _collectionRepository.GetByIdAsync(id);
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             return View("AddCollection", collection);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Item(int id)
+        {
+            Item item = await _itemRepository.GetItemByIdAsync(id);
+            StringBuilder builder = new StringBuilder();
+            foreach(Tags tag in item.Tags)
+            {
+                builder.Append(tag.Value + ", ");
+            }
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
+            ViewData["Collection"] = await _collectionRepository.GetByIdAsync(item.CollectionId);
+            ViewData["Field"] = await _customFieldRepository.GetAllAsync(item.CollectionId);
+            ViewData["FieldValue"] = await _customFieldRepository.GetAllValuesAsync(item.CollectionId);
+            ViewData["Tags"] = builder.ToString();
+            return View(item);
         }
 
 
@@ -120,8 +168,10 @@ namespace project.Controllers
 
 
         [HttpGet]
-        public IActionResult AddCollection()
+        public async Task<IActionResult> AddCollection()
         {
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             return View();
         }
 
@@ -136,15 +186,15 @@ namespace project.Controllers
                     name,
                     description,
                     theme,
-                    _googleRepositoy.UploadPhoto(files.OpenReadStream()),
-                    await _userRepository.GetUserByEmail(User.Identity.Name)));
+                    _googleRepository.UploadPhoto(files.OpenReadStream()),
+                    await _userRepository.GetUserByEmailAsync(User.Identity.Name)));
             } else
             {
                 idCollection = await _collectionRepository.AddAsync(new Collection(
                     name,
                     description,
                     theme,
-                    await _userRepository.GetUserByEmail(User.Identity.Name)));
+                    await _userRepository.GetUserByEmailAsync(User.Identity.Name)));
             }
 
             for(int i = 0; i < field.Length; i++)
@@ -164,6 +214,8 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> Collection(int id)
         {
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             ViewData["CustomFields"] = await _customFieldRepository.GetAllAsync(id);
             ViewData["CollectionId"] = id;
             return View(await _itemRepository.GetAllAsync(id));
@@ -172,8 +224,10 @@ namespace project.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Search(string searchText)
+        public async Task<IActionResult> Search(string searchText)
         {
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             return View();
         }
 

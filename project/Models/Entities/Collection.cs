@@ -5,8 +5,6 @@ namespace project.Models.Entities
 {
     public class Collection
     {
-        private TypeItem theme;
-
         public int Id { get; set; }
 
         public string Name { get; set; }
@@ -18,6 +16,8 @@ namespace project.Models.Entities
         public User User { get; set; }
 
         public TypeItem Type { get; set; }
+
+        public virtual ICollection<Item> Items { get; set; }
 
         public virtual ICollection<CustomField> Fields { get; set; }
 

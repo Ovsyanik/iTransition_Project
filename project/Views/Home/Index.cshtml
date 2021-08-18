@@ -1,102 +1,25 @@
-﻿@using Microsoft.AspNetCore.Identity;
+﻿@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = "Home Page";
-}
-<style>
-    .search:after {
-        content: "";
-        clear: both;
-        display: table
-    }
-
-    .search form {
-        width: auto;
-        float: right;
-        margin-right: 30px;
-    }
-
-    .search input {
-        width: 250px;
-        height: 42px;
-        padding-left: 15px;
-        border-radius: 42px;
-        border: 1px solid ;
-        outline: none;
-        position: relative;
-    }
-
-    .search .ser-button {
-        width: 42px;
-        height: 42px;
-        background: none;
-        z-index: 10;
-        border: none;
-        position: absolute;
-        margin: auto 210px;
-        float: right;
-        color: #324b4e;
-    }
-
-    .search .ser-button:before {
-        color: #324b4e;
-    }
-</style>
-
-@section Header {
-    <div class="container">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">project</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Мои коллекции</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Admin">Админ панель</a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="float-right">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <div class="search">
-                        <form asp-controller="Home" asp-action="Search" method="get">
-                            <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
-                                <i class="fa fa-search"></i>
-                            </button>
-                            <input type="text" name="searchText" placeholder="Искать здесь..." />
-                        </form>
-                    </div>
-                </li>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">Регистрация</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">Логин</a>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
+    List<Item> lastItems = ViewData["LastItems"] as List<Item>;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="text-ctenter">@Localizer["LastItems"]</h1>
+
+<div class="d-flex justify-content-between flex-wrap">
+    @foreach (Item item in lastItems)
+    {
+        <div onclick="goToItem(@item.Id)" style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;">
+            <p class="text-center" style="margin-top=10px;font-weight:700">@item.Name</p>
+            <p class="text-justify" style="margin-left: 5px">@item.Id</p>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        function goToItem(id) {
+            window.location.href='@Url.Action("Item", "Home")?id=' + id;
+        }
+    </script>
+}

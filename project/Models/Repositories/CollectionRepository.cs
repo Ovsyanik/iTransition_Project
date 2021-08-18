@@ -18,14 +18,14 @@ namespace project.Models.Repositories
 
         public async Task<Collection> GetByIdAsync(int id)
         {
-            return await _context.Collections.Include(col => col.Fields)
-                .FirstOrDefaultAsync(col => col.Id == id);
+            return await _context.Collections.Include(c => c.Fields)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public List<Collection> GetAllByUser(User user)
         {
             return _context.Collections
-                .Where(col => col.User.Id == user.Id).ToList();
+                .Where(c => c.User.Id == user.Id).ToList();
         }
 
         public async Task<int> AddAsync(Collection collection)

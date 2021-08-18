@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -16,15 +13,15 @@ namespace project.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserRepository userRepository;
-        private readonly SignInManager<User> signInManager;
+        private readonly UserRepository _userRepository;
+        private readonly SignInManager<User> _signInManager;
 
         public AccountController(
             SignInManager<User> signInManager, 
             UserRepository userRepository)
         {
-            this.signInManager = signInManager;
-            this.userRepository = userRepository;
+            _signInManager = signInManager;
+            _userRepository = userRepository;
         }
 
 
@@ -40,7 +37,7 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AuthenticationUser(string email, string password)
         {
-            IdentityUser user = await userRepository.AuthenticateAsync(email, password);
+            IdentityUser user = await _userRepository.AuthenticateAsync(email, password);
 
             if (user != null)
             {
@@ -66,7 +63,7 @@ namespace project.Controllers
         public IActionResult GoogleLogin()
         {
             string redirectUrl = Url.Action("ExternalResponse", "Account");
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
             return new ChallengeResult("Google", properties);
         }
 
@@ -75,7 +72,7 @@ namespace project.Controllers
         public IActionResult FacebookLogin()
         {
             string redirectUrl = Url.Action("ExternalResponse", "Account");
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Facebook", redirectUrl);
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Facebook", redirectUrl);
             return new ChallengeResult("Facebook", properties);
         }
 
@@ -83,7 +80,7 @@ namespace project.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ExternalResponse()
         {
-            ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info.LoginProvider == "Facebook")
                 await Authenticate(info.Principal.FindFirstValue(ClaimTypes.NameIdentifier));
             else
@@ -101,7 +98,7 @@ namespace project.Controllers
                     Role = RoleUser.User
                 };
 
-                checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.Email).Value);
+                checkUser = await _userRepository.GetUserByEmailAsync(info.Principal.FindFirst(ClaimTypes.Email).Value);
             } else
             {
                 user = new User
@@ -112,11 +109,11 @@ namespace project.Controllers
                     Role = RoleUser.User
                 };
 
-                checkUser = await userRepository.GetUserByEmail(info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value);
+                checkUser = await _userRepository.GetUserByEmailAsync(info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value);
             }
             if (checkUser == null)
             {
-                await userRepository.RegisterAsync(user);
+                await _userRepository.RegisterAsync(user);
             }
 
             return RedirectToAction("Index", "Home");
@@ -137,7 +134,7 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrationUser(string userName, string email, string password)
         {
-            User user = await userRepository.GetUserByEmail(email);
+            User user = await _userRepository.GetUserByEmailAsync(email);
 
             if (user == null)
             {
@@ -149,7 +146,7 @@ namespace project.Controllers
                     Role = RoleUser.User
                 };
 
-                await userRepository.RegisterAsync(newUser);
+                await _userRepository.RegisterAsync(newUser);
 
                 return RedirectToAction("Authentication", "Account");
             }

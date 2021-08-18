@@ -9,9 +9,9 @@ namespace project.Models.Entities
     {
         public int Id { get; set; }
 
-        public string Username { get; set; }
+        public string UserName { get; set; }
 
-        public int ItemID { get; set; }
+        public int ItemId { get; set; }
         
         public Item Item { get; set; }
     }

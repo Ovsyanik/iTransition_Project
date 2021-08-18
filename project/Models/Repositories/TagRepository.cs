@@ -15,16 +15,16 @@ namespace project.Models.Repositories
             _context = myDbContext;
         }
 
-        public Tags Add(Tags tag)
+        public async Task<Tags> AddAsync(Tags tag)
         {
-            _context.Tags.Add(tag);
-            Save();
+            await _context.Tags.AddAsync(tag);
+            await SaveAsync();
             return tag;
         }
 
-        private void Save()
+        private async Task SaveAsync()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

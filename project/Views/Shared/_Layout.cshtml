@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@inject IViewLocalizer Localizer
+@{
+    User user = ViewData["User"] as User;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -11,7 +16,62 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            @RenderSection("Header")
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Project</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Personal</a>
+                            </li>
+                        }
+                        @if (user != null)
+                        {
+                            if (user.Role == RoleUser.Admin)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Admin">Admin</a>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+
+                <div class="float-right">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <div class="search">
+                                <form asp-controller="Home" asp-action="Search" method="post">
+                                    <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                    <input type="text" name="searchText" placeholder="@Localizer["Search"]..." />
+                                </form>
+                            </div>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">@Localizer["SignOut"]</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">@Localizer["Register"]</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">@Localizer["Login"]</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
         </nav>
     </header>
     <div class="container">

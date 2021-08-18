@@ -2,56 +2,17 @@
     List<Collection> collections = Model;
 }
 
-@section Header {
-    <div class="container">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">project</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Мои коллекции</a>
-                </li>
-            </ul>
-        </div>
+<a class="btn btn-info" asp-controller="Home" asp-action="AddCollection">Add collection</a>
 
-        <div class="float-right">
-            <ul class="navbar-nav flex-grow-1">
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">Регистрация</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">Логин</a>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
-
-<a class="btn btn-info" asp-controller="Home" asp-action="AddCollection">Добавить коллекцию</a>
-
-<h1 class="text-center">Мои коллекции</h1>
+<h1 class="text-center">My collections</h1>
 
 <div class="d-flex justify-content-between flex-wrap">
     @foreach (Collection collection in collections)
     {
-    <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;">
+    <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
+         onclick="goToCollection(@collection.Id)">
         <img style="margin-left:4px; margin-top: 5px" src="@collection.PathImage"
-             width="160" height="150" onclick="goToCollection(@collection.Id)">
+             width="160" height="150">
         <p class="text-center" style="margin-top=10px;font-weight:700">@collection.Name</p>
         <p class="text-justify" style="margin-left: 5px">@collection.Description</p>
     </div>

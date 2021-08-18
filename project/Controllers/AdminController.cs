@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using project.Models.Entities;
 using project.Models.Repositories;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace project.Controllers
@@ -14,8 +12,7 @@ namespace project.Controllers
     {
         private readonly UserRepository _userRepository;
 
-        public AdminController(
-            UserRepository userRepository)
+        public AdminController(UserRepository userRepository)
         {
             _userRepository = userRepository;
         }

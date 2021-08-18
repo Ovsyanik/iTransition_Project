@@ -16,19 +16,31 @@ namespace project.Models.Repositories
             _context = context;
         }
 
-        public async Task<List<Item>> GetLastItemsAsync()
+        public async Task<Item> GetItemByIdAsync(int id)
         {
             return await _context.Items
                 .Include(i => i.Likes)
+                .Include(i => i.Comments)
+                .Include(i => i.CustomFieldValues)
+                .Include(i => i.CustomFields)
+                .Include(i => i.Tags)
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+
+        public async Task<List<Item>> GetLastItemsAsync()
+        {
+            return await _context.Items
                 .OrderByDescending(i => i.Id).Take(5).ToListAsync();
         }
+
 
         public async Task<List<Item>> GetAllAsync(int id)
         {
             return await _context.Items
-                .Where(item => item.CollectionId == id)
-                .Include(item => item.CustomFieldValues)
-                .Include(Item => Item.Tags).ToListAsync();
+                .Where(i => i.CollectionId == id)
+                .Include(i => i.CustomFieldValues)
+                .Include(i => i.Tags).ToListAsync();
         }
 
 
@@ -42,37 +54,85 @@ namespace project.Models.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Guid> AddAsync(Item item)
+
+        public async Task<int> AddAsync(int collectionId, Item item)
         {
-            await _context.AddAsync(item);
+            Collection collection = await _context.Collections
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+            item.Collection = collection;
+            collection.Items.Add(item);
             await SaveAsync();
 
             return item.Id;
         }
 
-        public async Task Change(Item item)
+
+        public async Task<Item> AddOrDeleteLikeAsync(int itemId, string userName)
+        {
+            Item item = await _context.Items.Include(i => i.Likes)
+                .FirstOrDefaultAsync(i => i.Id == itemId);
+            if (item == null) return null;
+            Like like = item.Likes.FirstOrDefault(l => l.UserName == userName);
+            if (like == null)
+            {
+                like = new Like {
+                    UserName = userName,
+                    Item = item,
+                };
+                item.Likes.Add(like);
+            }
+            else
+            {
+                item.Likes.Remove(like);
+            }
+
+            await SaveAsync();
+
+            return item;
+        }
+
+
+        public async Task<Item> AddCommentAsync(int itemId, string text, string userName)
+        {
+            User user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            Item item = await _context.Items.Include(i => i.Comments)
+                .FirstOrDefaultAsync(i => i.Id == itemId);
+
+            if (item == null) return null;
+
+            item.Comments.Add(new Comment
+            {
+                Author = userName,
+                CreatedDate = DateTime.UtcNow,
+                ItemId = itemId,
+                Text = text
+            });
+            await SaveAsync();
+            return item;
+        }
+
+
+        public async Task EditAsync(Item item)
         {
 
             await SaveAsync();
         }
+
 
         public async Task DeleteAsync(int collectionId)
         {
             List<Item> items = await GetAllAsync(collectionId);
-            items.ForEach(item => _context.Items.Remove(item));
+            items.ForEach(i => _context.Items.Remove(i));
             await SaveAsync();
         }
+
 
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
         }
-
-        public async Task<List<Collection>> GetCollections()
-        {
-            return new List<Collection>(); 
-        }
-
-
     }
 }

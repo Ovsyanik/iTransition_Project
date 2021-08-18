@@ -5,51 +5,11 @@
     int collectionId = ((int)ViewData["CollectionId"]);
 }
 
-@section Header {
-    <div class="container">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">project</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Мои коллекции</a>
-                </li>
-            </ul>
-        </div>
+<a class="btn btn-primary" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Add item</a>
 
-        <div class="float-right">
-            <ul class="navbar-nav flex-grow-1">
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">Выйти</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">Регистрация</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">Логин</a>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
+<a class="btn btn-primary" asp-controller="Home" asp-action="EditCollection" asp-route-id="@collectionId">Edit collection</a>
 
-<a class="btn btn-primary" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Добавить элемент</a>
-
-<a class="btn btn-primary" asp-controller="Home" asp-action="EditCollection" asp-route-id="@collectionId">Изменить коллекцию</a>
-
-<button class="btn btn-primary" onclick="showModal()">Удалить коллекцию</button>
+<button class="btn btn-primary" onclick="showModal()">Delete collection</button>
 
 <div class="modal fade bs-example-modal-sm" tabindex="-1" id="modal" role="dialog" aria-labelledby="mySmallModalLabel">
     <div class="modal-dialog modal-sm" role="document">
@@ -84,7 +44,7 @@
         {
             foreach (Item item in items)
             {
-                <tr>
+                <tr onclick="goToItem(@item.Id)">
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.Tags</td>
@@ -103,10 +63,14 @@
 </table>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         function showModal() {
             $('#modal').modal();
         }
-    </script>
 
+        function goToItem(id) {
+            window.location.href='@Url.Action("Item", "Home")?id=' + id;
+        }
+    </script>
 }

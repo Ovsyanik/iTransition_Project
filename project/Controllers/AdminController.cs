@@ -21,6 +21,8 @@ namespace project.Controllers
         public async Task<IActionResult> Admin()
         {
             List<User> users = await _userRepository.GetAllAsync();
+            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            ViewData["User"] = user;
             return View(users);
         }
 

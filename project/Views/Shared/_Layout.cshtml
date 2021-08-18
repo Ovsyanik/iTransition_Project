@@ -26,9 +26,12 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Personal</a>
-                            </li>
+                            if (user.Role == RoleUser.User)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Personal</a>
+                                </li>
+                            }
                         }
                         @if (user != null)
                         {
@@ -53,6 +56,9 @@
                                     <input type="text" name="searchText" placeholder="@Localizer["Search"]..." />
                                 </form>
                             </div>
+                        </li>
+                        <li class="nav-item align-content-center">
+                            @await Html.PartialAsync("_SelectLanguagePartial")
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {

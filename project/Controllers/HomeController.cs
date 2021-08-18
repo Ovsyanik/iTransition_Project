@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Text;
+using Microsoft.AspNetCore.Localization;
 
 namespace project.Controllers
 {
@@ -135,6 +136,7 @@ namespace project.Controllers
             return View("AddCollection", collection);
         }
 
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Item(int id)
@@ -236,6 +238,19 @@ namespace project.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return LocalRedirect(returnUrl);
         }
     }
 }

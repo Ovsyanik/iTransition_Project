@@ -1,9 +1,10 @@
-﻿@{
+﻿@inject IViewLocalizer Localizer
+@{
     int collectionId = ((int)ViewData["CollectionId"]);
     List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
 }
 
-<h1 class="text-center">Add item</h1>
+<h2 class="text-center">Add item</h2>
 
 <form method="post" asp-controller="Home" asp-action="AddItem">
     <input type="hidden" name="collectionId" value="@collectionId">

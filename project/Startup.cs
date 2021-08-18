@@ -29,7 +29,21 @@ namespace project
             services.AddLocalization(options => 
                 options.ResourcesPath = "Resources");
             services.AddControllersWithViews()
+                .AddDataAnnotationsLocalization()
                 .AddViewLocalization();
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en"),
+                    new CultureInfo("ru")
+                };
+
+                options.DefaultRequestCulture = new RequestCulture("ru");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
 
             services.AddScoped<ItemRepository>();
             services.AddScoped<UserRepository>();
@@ -81,17 +95,17 @@ namespace project
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            var supportedCultures = new[]
+            app.UseRequestLocalization(options =>
             {
-                new CultureInfo("en"),
-                new CultureInfo("ru")
-            };
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en"),
+                    new CultureInfo("ru")
+                };
 
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("ru"),
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures
+                options.DefaultRequestCulture = new RequestCulture("ru");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
             });
 
             app.UseStaticFiles();

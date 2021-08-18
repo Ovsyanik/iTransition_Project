@@ -1,31 +1,29 @@
-﻿@{
+﻿@inject IViewLocalizer Localizer
+@{
     CustomFieldType[] customFieldTypes = (CustomFieldType[])Enum.GetValues(typeof(CustomFieldType));
     List<SelectListItem> selectListItems = new List<SelectListItem>();
-    foreach(var type in customFieldTypes)
+    foreach (var type in customFieldTypes)
     {
-        selectListItems.Add(new SelectListItem {Value = type.ToString(), Text = type.ToString() });
+        selectListItems.Add(new SelectListItem { Value = type.ToString(), Text = type.ToString() });
     }
     Collection collection = new Collection();
-    if(Model != null)
+    if (Model != null)
     {
         collection = Model;
     }
 }
-
-<link href="../dropzone/dist/min/dropzone.min.css" rel="stylesheet">
-
-<h1 class="text-center">Add collection</h1>
+<h2 class="text-center">Add collection</h2>
 
 <form method="post" asp-controller="Home" asp-action="AddCollectionPost" enctype="multipart/form-data">
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" 
+        <input type="text" class="form-control" id="name" name="name"
                value="@collection.Name" placeholder="Enter name">
-        </div>
+    </div>
 
     <div class="form-group">
         <label for="theme">Theme</label>
-        <select id="theme" name="theme" class="form-control selectpicker" 
+        <select id="theme" name="theme" class="form-control selectpicker"
                 data-style="btn-success" required>
             <option>@TypeItem.Books</option>
             <option>@TypeItem.NewPapers</option>
@@ -59,7 +57,7 @@
                     <div class="form-group">
                         <input type="text" class="form-control" id="description" value="@field.Title"
                                name="field" placeholder="Enter Field">
-                        <select asp-for="@field.CustomFieldType" asp-items='@selectListItems' 
+                        <select asp-for="@field.CustomFieldType" asp-items='@selectListItems'
                                 class="form-control selectpicker" data-style="btn-success"></select>
                     </div>
                 }
@@ -70,10 +68,6 @@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
-
-
-
-
 @section Scripts {
     <script>
         function callondrop(e) {
@@ -82,17 +76,13 @@
                 var files = e.target.files || e.dataTransfer.files;
                 $('#files')[0].files = files;
             }
-
             return false;
         }
 
         function newField(customFieldTypes) {
             let container = document.getElementById("fields");
-
             let fieldCount = container.getElementsByTagName("input").length;
-
             let nextFieldId = fieldCount + 1;
-
             let div = document.createElement("div");
             div.setAttribute("class", "form-group row");
 

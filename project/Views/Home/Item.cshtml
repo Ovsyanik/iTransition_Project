@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject IViewLocalizer Localizer
+@{
     Item item = Model;
     Collection collection = ViewData["Collection"] as Collection;
     List<CustomField> fields = ViewData["Field"] as List<CustomField>;

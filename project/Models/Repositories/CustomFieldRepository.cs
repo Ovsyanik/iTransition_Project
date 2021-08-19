@@ -16,10 +16,12 @@ namespace project.Models.Repositories
             _context = context;
         }
 
+
         public async Task<List<CustomField>> GetAllAsync(int id)
         {
             return await _context.CustomFields.Where(c => c.CollectionId == id).ToListAsync();
         }
+
 
         public async Task<List<CustomFieldValue>> GetAllValuesAsync(int collectionId)
         {
@@ -28,11 +30,13 @@ namespace project.Models.Repositories
                 .ToListAsync();
         }
 
+
         public async Task AddAsync(CustomField customField)
         {
             await _context.CustomFields.AddAsync(customField);
             await SaveAsync();
         }
+
 
         public async Task<CustomFieldValue> AddCustomFieldValueAsync(CustomFieldValue value)
         {

@@ -18,7 +18,10 @@ namespace project.Models.Repositories
 
         public async Task<Collection> GetByIdAsync(int id)
         {
-            return await _context.Collections.Include(c => c.Fields)
+            return await _context.Collections
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Tags)
+                .Include(c => c.Fields)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -26,6 +29,13 @@ namespace project.Models.Repositories
         {
             return _context.Collections
                 .Where(c => c.User.Id == user.Id).ToList();
+        }
+
+        public async Task<List<Collection>> GetCollectionsLargestItem()
+        {
+            List<Collection> collections = await _context.Collections
+                .OrderByDescending(c => c.Items.Count).Take(6).ToListAsync();
+            return collections;
         }
 
         public async Task<int> AddAsync(Collection collection)

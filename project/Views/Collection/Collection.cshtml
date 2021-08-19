@@ -1,14 +1,11 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-    List<Item> items = Model;
-    List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
-    List<CustomFieldValue> customFieldValues = ViewData["CustomFieldValues"] as List<CustomFieldValue>;
-    int collectionId = ((int)ViewData["CollectionId"]);
+    Collection collection = Model;
 }
 
-<a class="btn btn-primary" asp-controller="Home" asp-action="AddItem" asp-route-id="@collectionId">Add item</a>
+<a class="btn btn-primary" asp-controller="Home" asp-action="AddItem" asp-route-id="@collection.Id">Add item</a>
 
-<a class="btn btn-primary" asp-controller="Home" asp-action="EditCollection" asp-route-id="@collectionId">Edit collection</a>
+<a class="btn btn-primary" asp-controller="Home" asp-action="EditCollection" asp-route-id="@collection.Id">Edit collection</a>
 
 <button class="btn btn-primary" onclick="showModal()">Delete collection</button>
 
@@ -22,7 +19,7 @@
                 <h4 class="modal-content">После удаления вы потеряете все данные</h4>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="window.location.href = '@Url.Action("DeleteCollection", "Home")?id=' + @collectionId" class="btn btn-primary">Ok</button>
+                <button type="button" onclick="window.location.href = '@Url.Action("DeleteCollection", "Home")?id=' + @collection.Id" class="btn btn-primary">Ok</button>
             </div>
         </div>
     </div>
@@ -31,19 +28,19 @@
 <table class="table" id="table">
     <thead class="thead-light">
         <tr>
-            <th scope="col">Id</th>
-            <th scope="col">Name</th>
-            <th scope="col">Tags</th>
-            @foreach (CustomField customField in customFields)
+            <th scope="col" onclick="sortById()">Id</th>
+            <th scope="col" onclick="sortByName()">Name</th>
+            <th scope="col" onclick="">Tags</th>
+            @foreach (CustomField customField in collection.Fields)
             {
                 <th scope="col">@customField.Title</th>
             }
         </tr>
     </thead>
     <tbody>
-        @if (items != null)
+        @if (collection.Items != null)
         {
-            foreach (Item item in items)
+            foreach (Item item in collection.Items)
             {
                 <tr onclick="goToItem(@item.Id)">
                     <td>@item.Id</td>
@@ -72,6 +69,14 @@
 
         function goToItem(id) {
             window.location.href='@Url.Action("Item", "Home")?id=' + id;
+        }
+
+        function sortById() {
+            window.location.href='@Url.Action("SortById", "Home")?id=' + id;
+        }
+
+        function sortByName() {
+            window.location.href='@Url.Action("SortByName", "Home")?id=' + id;
         }
     </script>
 }

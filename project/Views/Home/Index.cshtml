@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Home Page";
     List<Item> lastItems = ViewData["LastItems"] as List<Item>;
+    List<Collection> collections = ViewData["CollectionLargestItems"] as List<Collection>;
 }
 
 <h2 class="text-ctenter">@Localizer["LastItems"]</h2>
@@ -16,10 +17,29 @@
     }
 </div>
 
+<h2 class="text-ctenter" style="margin-top: 20px">@Localizer["CollectionsLargestItems"]</h2>
+
+<div class="d-flex justify-content-between flex-wrap">
+    @foreach (Collection collection in collections)
+    {
+        <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
+             onclick="goToCollection(@collection.Id)">
+            <img style="margin-left:4px; margin-top: 5px" src="@collection.PathImage"
+                 width="160" height="150">
+            <p class="text-center" style="margin-top=10px;font-weight:700">@collection.Name</p>
+            <p class="text-justify" style="margin-left: 5px">@collection.Description</p>
+        </div>
+    }
+</div>
+
 @section Scripts {
     <script>
         function goToItem(id) {
             window.location.href='@Url.Action("Item", "Home")?id=' + id;
+        }
+
+        function goToCollection(id) {
+            window.location.href='@Url.Action("Collection", "Collection")?id=' + id;
         }
     </script>
 }

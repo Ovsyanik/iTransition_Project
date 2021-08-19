@@ -20,29 +20,5 @@ namespace project.Models.Entities
         public virtual ICollection<Item> Items { get; set; }
 
         public virtual ICollection<CustomField> Fields { get; set; }
-
-        public Collection() { }
-
-        public Collection(string name, string description, TypeItem theme, User user)
-        {
-            Name = name;
-            Description = description;
-            Type = theme;
-            User = user;
-        }
-
-        public Collection(
-            string name, 
-            string description, 
-            TypeItem type, 
-            string pathImage, 
-            User user)
-        {
-            Name = name;
-            Description = description;
-            Type = type;
-            PathImage = pathImage;
-            User = user;
-        }
     }
 }

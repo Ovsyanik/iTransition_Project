@@ -1,6 +1,20 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-    CustomFieldType[] customFieldTypes = (CustomFieldType[])Enum.GetValues(typeof(CustomFieldType));
+
+    List<CustomFieldType> customFieldTypes = new List<CustomFieldType>();
+    customFieldTypes.Add(CustomFieldType.Checkbox);
+    customFieldTypes.Add(CustomFieldType.Text);
+    customFieldTypes.Add(CustomFieldType.String);
+    customFieldTypes.Add(CustomFieldType.Date);
+    customFieldTypes.Add(CustomFieldType.Number);
+
+    List<String> customFieldTypesString = new List<String>();
+    customFieldTypesString.Add(CustomFieldType.Checkbox.ToString());
+    customFieldTypesString.Add(CustomFieldType.Text.ToString());
+    customFieldTypesString.Add(CustomFieldType.String.ToString());
+    customFieldTypesString.Add(CustomFieldType.Date.ToString());
+    customFieldTypesString.Add(CustomFieldType.Number.ToString());
+
     List<SelectListItem> selectListItems = new List<SelectListItem>();
     foreach (var type in customFieldTypes)
     {
@@ -47,7 +61,7 @@
 
     <div class="row">
         <div class="col-3">
-            <input type="button" class="btn btn-primary" value="Добавить поле" onclick="newField(@Html.Raw(Json.Serialize(customFieldTypes)))" />
+            <input type="button" class="btn btn-primary" value="Добавить поле" onclick='newField(@Html.Raw(Json.Serialize(customFieldTypes)), @Html.Raw(Json.Serialize(customFieldTypesString)))' />
         </div>
         <div id="fields" class="col-9">
             @if (collection.Fields != null)
@@ -79,7 +93,7 @@
             return false;
         }
 
-        function newField(customFieldTypes) {
+        function newField(customFieldTypes, customFieldTypesString) {
             let container = document.getElementById("fields");
             let fieldCount = container.getElementsByTagName("input").length;
             let nextFieldId = fieldCount + 1;
@@ -100,7 +114,8 @@
 
             for (let i = 0; i < customFieldTypes.length; i++) {
                 let typeFieldTypes = document.createElement("option");
-                typeFieldTypes.innerHTML = customFieldTypes[i];
+                typeFieldTypes.setAttribute("value", customFieldTypes[i]);
+                typeFieldTypes.innerHTML = customFieldTypesString[i];
                 typeField.appendChild(typeFieldTypes);
             }
 

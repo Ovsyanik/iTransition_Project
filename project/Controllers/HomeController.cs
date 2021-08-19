@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Text;
@@ -49,6 +46,8 @@ namespace project.Controllers
         {
             ViewData["LastItems"] = await _itemRepository.GetLastItemsAsync();
             User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            var collections = await _collectionRepository.GetCollectionsLargestItem();
+            ViewData["CollectionLargestItems"] = collections;
             ViewData["User"] = user;
             return View();
         }
@@ -103,7 +102,7 @@ namespace project.Controllers
                 Name = name, 
                 CollectionId = collectionId, 
                 CustomFieldValues = fields });
-            return RedirectToAction("Collection", new { id = collectionId });
+            return RedirectToAction("Collection", "Collection", new { id = collectionId });
         }
 
 
@@ -184,19 +183,21 @@ namespace project.Controllers
             int idCollection;
             if (files != null)
             {
-                idCollection = await _collectionRepository.AddAsync(new Collection(
-                    name,
-                    description,
-                    theme,
-                    _googleRepository.UploadPhoto(files.OpenReadStream()),
-                    await _userRepository.GetUserByEmailAsync(User.Identity.Name)));
+                idCollection = await _collectionRepository.AddAsync(new Collection {
+                    Name = name,
+                    Description = description,
+                    Type = theme,
+                    PathImage = _googleRepository.UploadPhoto(files.OpenReadStream()),
+                    User = await _userRepository.GetUserByEmailAsync(User.Identity.Name) 
+                });
             } else
             {
-                idCollection = await _collectionRepository.AddAsync(new Collection(
-                    name,
-                    description,
-                    theme,
-                    await _userRepository.GetUserByEmailAsync(User.Identity.Name)));
+                idCollection = await _collectionRepository.AddAsync(new Collection {
+                    Name = name,
+                    Description = description,
+                    Type = theme,
+                    User = await _userRepository.GetUserByEmailAsync(User.Identity.Name)
+                });
             }
 
             for(int i = 0; i < field.Length; i++)
@@ -212,16 +213,6 @@ namespace project.Controllers
             return RedirectToAction("Collections", "Home");
         }
 
-
-        [HttpGet]
-        public async Task<IActionResult> Collection(int id)
-        {
-            User user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
-            ViewData["User"] = user;
-            ViewData["CustomFields"] = await _customFieldRepository.GetAllAsync(id);
-            ViewData["CollectionId"] = id;
-            return View(await _itemRepository.GetAllAsync(id));
-        }
 
 
         [HttpGet]

@@ -2,29 +2,43 @@
 @{
     int collectionId = ((int)ViewData["CollectionId"]);
     List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
+    Item item = new Item();
+    if(Model != null)
+    {
+        item = Model;
+    }
+
+    string GetActionForm()
+    {
+        return item.Id == 0 ? "AddItem" : "EditItem";
+    }
 }
 
 <h2 class="text-center">Add item</h2>
 
-<form method="post" asp-controller="Home" asp-action="AddItem">
+<form method="post" asp-controller="Home" asp-action="@GetActionForm()">
     <input type="hidden" name="collectionId" value="@collectionId">
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
+        <input type="text" class="form-control" id="name" name="name" value="@item.Name" placeholder="Enter name">
     </div>
 
     <div class="form-group">
         <label for="tags">Tags</label>
-        <input type="text" class="form-control" id="tags" name="Tags" placeholder="Enter name">
+        <input type="text" class="form-control" id="tags" name="tags" value="@item.Tags" placeholder="Enter tag">
     </div>
 
-    @foreach (CustomField customField in customFields)
+    <div id="tagsDiv"></div>
+
+    <input type="button" onclick="addTag()" class="btn btn-primary" value="@Localizer["AddTag"]" />
+
+    @for(int i = 0; i < customFields.Count; i++)
     {
-        <input type="text" name="customField" value="@customField.Id" style="display: none;">
+        <input type="text" name="customField" value="@customFields[i].Id" style="display: none;">
 
         <div class="form-group">
-            <label for="@customField.Title">@customField.Title</label>
-            <input type="text" class="form-control" id="@customField.Title" name="customFieldValue" placeholder="Enter @customField.Title">
+            <label for="@customFields[i].Title">@customFields[i].Title</label>
+            <input type="text" class="form-control" id="@customFields[i].Title" name="customFieldValue" placeholder="Enter @customFields[i].Title">
         </div>
     }
 
@@ -33,6 +47,19 @@
 
 @section Scripts {
     <script>
+        function addTag() {
+            let container = document.getElementById("tagsDiv");
+            let div = document.createElement("div");
+            div.setAttribute("class", "form-group");
 
+            let field = document.createElement("input");
+            field.setAttribute("class", "form-control");
+            field.setAttribute("name", "tags");
+            field.setAttribute("type", "text");
+
+            div.appendChild(field);
+
+            container.appendChild(div);
+        }
     </script>
 }

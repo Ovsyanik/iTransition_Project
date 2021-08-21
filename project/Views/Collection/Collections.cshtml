@@ -3,20 +3,32 @@
     List<Collection> collections = Model;
 }
 
-<a class="btn btn-info" asp-controller="Home" asp-action="AddCollection">Add collection</a>
+<a class="btn btn-info" asp-controller="Collection" asp-action="AddCollection">@Localizer["AddCollection"]</a>
 
-<h2 class="text-center">My collections</h2>
+<h2 class="text-center">@Localizer["MyCollections"]</h2>
 
 <div class="d-flex justify-content-between flex-wrap">
     @foreach (Collection collection in collections)
     {
+    <div >
         <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
              onclick="goToCollection(@collection.Id)">
             <img style="margin-left:4px; margin-top: 5px" src="@collection.PathImage"
                  width="160" height="150">
             <p class="text-center" style="margin-top=10px;font-weight:700">@collection.Name</p>
             <p class="text-justify" style="margin-left: 5px">@collection.Description</p>
+
         </div>
+
+        <div>
+            @Html.ActionLink(
+            "Delete",
+            "DeleteCollection",
+            "Collection",
+            new { collectionId = collection.Id, userEmail = collection.User.Email },
+            new { @class = "btn btn-danger" })
+        </div>
+    </div>
     }
 </div>
 

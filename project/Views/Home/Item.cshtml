@@ -1,23 +1,50 @@
 ﻿@inject IViewLocalizer Localizer
 @{
     Item item = Model;
-    Collection collection = ViewData["Collection"] as Collection;
     List<CustomField> fields = ViewData["Field"] as List<CustomField>;
     List<CustomFieldValue> values = ViewData["FieldValue"] as List<CustomFieldValue>;
-    string tags = ViewData["Tags"].ToString();
 }
 
-<div>
+<div >
     <h4>Name: @item.Name</h4>
-    <h4>Collection: @collection.Name</h4>
-    <h4>Tags: @tags</h4>
+    <h4>Collection: @item.Collection.Name</h4>
+    <h4>Tags: @item.Tags.ListToString()</h4>
     @for (int i = 0; i < fields.Count; i++)
     {
         <h4>@fields[i].Title: @values[i].Value</h4>
     }
+
+</div>
+<div>
     <button class="btn btn-primary" onclick="addLike(@item.Id)">Add Like</button>
     <span>Likes: @item.Likes.Count</span>
 </div>
+
+@if (User.Identity.IsAuthenticated)
+{
+    if (item.Collection.User.Email == project.Models.Entities.User.GetInstance().Email)
+    {
+        <div style="margin-top: 63px">
+            <a class="btn btn-primary"
+               asp-controller="Home"
+               asp-action="EditItem"
+               asp-route-id="@item.Id">@Localizer["EditItem"]</a>
+
+            <button class="btn btn-primary" onclick="showModal()">@Localizer["DeleteItem"]</button>
+        </div>
+    }
+}
+
+
+<div className='d-flex flex-column align-items-center m-3 p-2 shadow rounded'>
+    <form asp-controller="Home" asp-action="AddComment">
+        <input type="hidden" name="itemId" value="@item.Id">
+        <input type="text" className="form-control mb-4" name="text"
+                  placeholder='Write comment...' class="col-md-6 text-center" style="height: 50px"></input>
+        <button class="btn btn-primary" type="submit" style="height: 50px; position: absolute">Add Comment</button>
+    </form>
+</div>
+
 
 <div class='d-flex flex-column align-items-center p-3'>
     @if (item.Comments != null)
@@ -36,19 +63,35 @@
         }
     }
 </div>
-<div className='d-flex flex-column align-items-center m-3 p-2 shadow rounded'>
-    <form asp-controller="Home" asp-action="AddComment">
-        <input type="hidden" name="itemId" value="@item.Id">
-        <textarea type="input" className="form-control mb-4" name="text"
-                  placeholder='Write comment...'></textarea>
-        <button className="btn btn-success" type="submit">Add Comment</button>
-    </form>
+
+
+<div class="modal fade bs-example-modal-sm" tabindex="-1" id="modal" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Удалить элемент?</h4>
+            </div>
+            <div class="modal-body">
+                <h4 class="modal-content">После удаления вы потеряете все данные</h4>
+            </div>
+            <div class="modal-footer">
+                
+                <button type="button" class="btn btn-primary"
+                        onclick="window.location.href = '@Url.Action("DeleteItem", "Home")?id=' + @item.Id + '&collectionId=' + @item.Collection.Id">Ok</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 
 @section Scripts {
     <script>
         function addLike(id) {
             window.location.href='@Url.Action("AddLike", "Home")?id=' + id;
+        }
+
+        function showModal() {
+            $('#modal').modal();
         }
 
     </script>

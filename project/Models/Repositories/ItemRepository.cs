@@ -19,18 +19,19 @@ namespace project.Models.Repositories
         public async Task<Item> GetItemByIdAsync(int id)
         {
             return await _context.Items
+                .Include(i => i.Collection).ThenInclude(c => c.User)
                 .Include(i => i.Likes)
                 .Include(i => i.Comments)
-                .Include(i => i.CustomFieldValues)
-                .Include(i => i.CustomFields)
                 .Include(i => i.Tags)
+                .Include(i => i.CustomFieldValues)
+                .Include(i => i.CustomFieldValues)
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
 
         public async Task<List<Item>> GetLastItemsAsync()
         {
-            return await _context.Items
+            return await _context.Items.Include(i => i.Tags)
                 .OrderByDescending(i => i.Id).Take(5).ToListAsync();
         }
 
@@ -46,11 +47,12 @@ namespace project.Models.Repositories
 
         public async Task<List<Item>> SearchItems(string query)
         {
-            return await _context.Items.Where(i => 
-                EF.Functions.FreeText(i.Name, query) || 
-                EF.Functions.FreeText(i.Collection.Description, query) || 
-                i.Comments.Any(c => EF.Functions.FreeText(c.Text, query)) || 
-                i.CustomFields.Any(f => EF.Functions.FreeText(f.Title, query)))
+            return await _context.Items.Include(i => i.Collection)
+                .Include(i => i.Comments).Include(i => i.Likes)
+                .Where(i => i.Name.Contains(query) || 
+                i.Collection.Description.Contains(query) || 
+                i.Comments.Any(c => c.Text.Contains(query)) || 
+                i.CustomFields.Any(f => f.Title.Contains(query)))
                 .ToListAsync();
         }
 
@@ -122,10 +124,12 @@ namespace project.Models.Repositories
         }
 
 
-        public async Task DeleteAsync(int collectionId)
+        public async Task DeleteAsync(int collectionId, int id)
         {
-            List<Item> items = await GetAllAsync(collectionId);
-            items.ForEach(i => _context.Items.Remove(i));
+            Collection collection = await _context.Collections.
+                Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+            collection.Items.Remove(await GetItemByIdAsync(id));
             await SaveAsync();
         }
 

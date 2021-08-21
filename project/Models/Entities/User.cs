@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 
 namespace project.Models.Entities
 {
@@ -10,14 +11,30 @@ namespace project.Models.Entities
 
         private static User instance;
 
-        private User()
+        private User(string email, RoleUser role) 
+        {
+            Email = email;
+            Role = role;
+        }
+
+        public User()
         { }
 
-        public static User getInstance()
+        public static User GetInstance()
+        {
+            return instance;
+        }
+
+        public static User GetInstance(string email, RoleUser role)
         {
             if (instance == null)
-                instance = new User();
+                instance = new User(email, role);
             return instance;
+        }
+
+        public static void SignOut()
+        {
+            instance = null;
         }
     }
 }

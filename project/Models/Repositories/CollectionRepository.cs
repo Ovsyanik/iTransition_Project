@@ -19,8 +19,10 @@ namespace project.Models.Repositories
         public async Task<Collection> GetByIdAsync(int id)
         {
             return await _context.Collections
-                .Include(c => c.Items)
-                .ThenInclude(i => i.Tags)
+                .Include(c => c.Items).ThenInclude(i => i.Tags)
+                .Include(c => c.Items).ThenInclude(i => i.CustomFieldValues)
+                .Include(c => c.Items).ThenInclude(i => i.Likes)
+                .Include(c => c.User)
                 .Include(c => c.Fields)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }

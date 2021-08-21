@@ -81,12 +81,8 @@ namespace project.Controllers
         public async Task<IActionResult> ExternalResponse()
         {
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info.LoginProvider == "Facebook")
-                await Authenticate(info.Principal.FindFirstValue(ClaimTypes.NameIdentifier));
-            else
-                await Authenticate(info.Principal.FindFirstValue(ClaimTypes.Email));
 
-            User user, checkUser;
+            User user, checkUser, user1;
 
             if (info.LoginProvider == "Google")
             {
@@ -116,12 +112,19 @@ namespace project.Controllers
                 await _userRepository.RegisterAsync(user);
             }
 
+            await Authenticate(user.Email);
+
+            User user2 = await _userRepository.GetUserByEmailAsync(user.Email);
+
+            Models.Entities.User.GetInstance(user2.Email, user2.Role);
+
             return RedirectToAction("Index", "Home");
         }
 
 
         public async Task<IActionResult> SignOut()
         {
+            Models.Entities.User.SignOut();
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -145,7 +148,7 @@ namespace project.Controllers
                     PasswordHash = password,
                     Role = RoleUser.User
                 };
-
+                
                 await _userRepository.RegisterAsync(newUser);
 
                 return RedirectToAction("Authentication", "Account");

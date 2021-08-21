@@ -1,6 +1,6 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-    User user = ViewData["User"] as User;
+    User user = project.Models.Entities.User.GetInstance();
 }
 
 <!DOCTYPE html>
@@ -29,7 +29,7 @@
                             if (user.Role == RoleUser.User)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Collections">Personal</a>
+                                    <a class="nav-link text-dark" asp-controller="Collection" asp-action="Collections">Personal</a>
                                 </li>
                             }
                         }
@@ -49,7 +49,7 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <div class="search">
-                                <form asp-controller="Home" asp-action="Search" method="post">
+                                <form asp-controller="Home" asp-action="Search" method="get">
                                     <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
                                         <i class="fa fa-search"></i>
                                     </button>
@@ -57,9 +57,7 @@
                                 </form>
                             </div>
                         </li>
-                        <li class="nav-item align-content-center">
-                            @await Html.PartialAsync("_SelectLanguagePartial")
-                        </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -89,6 +87,9 @@
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2021 - project - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="float-right">
+                @await Html.PartialAsync("_SelectLanguagePartial")
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

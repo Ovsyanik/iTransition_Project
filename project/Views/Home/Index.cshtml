@@ -1,4 +1,5 @@
-﻿@inject IViewLocalizer Localizer
+﻿
+@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = "Home Page";
     List<Item> lastItems = ViewData["LastItems"] as List<Item>;
@@ -10,9 +11,9 @@
 <div class="d-flex justify-content-between flex-wrap">
     @foreach (Item item in lastItems)
     {
-        <div onclick="goToItem(@item.Id)" style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;">
+        <div onclick="goToItem(@item.Id)" style="height: 75px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;">
             <p class="text-center" style="margin-top=10px;font-weight:700">@item.Name</p>
-            <p class="text-justify" style="margin-left: 5px">@item.Id</p>
+            <p class="text-center" style="margin-top=10px;font-weight:700">@item.Tags.ListToString()</p>
         </div>
     }
 </div>
@@ -22,7 +23,7 @@
 <div class="d-flex justify-content-between flex-wrap">
     @foreach (Collection collection in collections)
     {
-        <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
+        <div style="height: 260px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
              onclick="goToCollection(@collection.Id)">
             <img style="margin-left:4px; margin-top: 5px" src="@collection.PathImage"
                  width="160" height="150">

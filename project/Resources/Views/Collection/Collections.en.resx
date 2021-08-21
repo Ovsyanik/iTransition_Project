@@ -117,16 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddItem" xml:space="preserve">
-    <value>Add item</value>
+  <data name="AddCollection" xml:space="preserve">
+    <value>Add collection</value>
   </data>
-  <data name="DeleteCollection" xml:space="preserve">
-    <value>Delete collection</value>
-  </data>
-  <data name="DescriptionTitle" xml:space="preserve">
-    <value>Description</value>
-  </data>
-  <data name="EditCollection" xml:space="preserve">
-    <value>Edit collection</value>
+  <data name="MyCollections" xml:space="preserve">
+    <value>My collections</value>
   </data>
 </root>

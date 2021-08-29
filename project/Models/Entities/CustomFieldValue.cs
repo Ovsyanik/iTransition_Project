@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace project.Models.Entities
 {
@@ -10,8 +6,9 @@ namespace project.Models.Entities
     {
         public int Id { get; set; }
 
-        public int CustomField { get; set; } 
+        public int CustomField { get; set; }
 
+        [MaxLength(50)]
         public string Value { get; set; }
 
         public int CollectionId { get; set; }

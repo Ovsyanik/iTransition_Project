@@ -124,4 +124,7 @@
     <value>Last added Items</value>
     <comment>Last added Items</comment>
   </data>
+  <data name="TagsCloud" xml:space="preserve">
+    <value>Tags cloud</value>
+  </data>
 </root>

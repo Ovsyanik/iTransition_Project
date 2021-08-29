@@ -3,7 +3,8 @@
     int collectionId = ((int)ViewData["CollectionId"]);
     List<CustomField> customFields = ViewData["CustomFields"] as List<CustomField>;
     Item item = new Item();
-    if(Model != null)
+    List<Tags> tagsList = ViewData["tags"] as List<Tags>;
+    if (Model != null)
     {
         item = Model;
     }
@@ -14,52 +15,134 @@
     }
 }
 
-<h2 class="text-center">Add item</h2>
+<style>
+    .tags::-webkit-calendar-picker-indicator {
+        opacity: 0;
+    }
+</style>
+
+<h2 class="text-center">@Localizer["AddItemTitle"]</h2>
 
 <form method="post" asp-controller="Home" asp-action="@GetActionForm()">
+
     <input type="hidden" name="collectionId" value="@collectionId">
+
     <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="@item.Name" placeholder="Enter name">
+        <label for="name">@Localizer["Name"]</label>
+        <input type="text" class="form-control" id="name" name="name" value="@item.Name" placeholder="@Localizer["NamePlaceholder"]">
     </div>
 
     <div class="form-group">
-        <label for="tags">Tags</label>
-        <input type="text" class="form-control" id="tags" name="tags" value="@item.Tags" placeholder="Enter tag">
-    </div>
+        <label for="tags">@Localizer["Tags"]</label>
+        <div id="tagsDiv">
+            @if (item.Tags != null)
+            {
+                foreach (var tag in item.Tags)
+                {
+                    <div>
+                        <input name="tags" type="hidden" value="@tag.Value" />
+                        <span class="spanTag">
+                            @tag.Value
+                            <span class="spanClose" onclick="removeSpan(this)">x</span>
+                        </span>
+                    </div>
+                }
+            }
+            <input type="text" autocorrect="off" autocomplete="off" aria-expanded="false"
+                   style="width: 100px;" class="tags" list="tagsComplete">
 
-    <div id="tagsDiv"></div>
-
-    <input type="button" onclick="addTag()" class="btn btn-primary" value="@Localizer["AddTag"]" />
-
-    @for(int i = 0; i < customFields.Count; i++)
-    {
-        <input type="text" name="customField" value="@customFields[i].Id" style="display: none;">
-
-        <div class="form-group">
-            <label for="@customFields[i].Title">@customFields[i].Title</label>
-            <input type="text" class="form-control" id="@customFields[i].Title" name="customFieldValue" placeholder="Enter @customFields[i].Title">
+            <datalist id="tagsComplete">
+                @foreach (Tags tags in tagsList)
+                {
+                    <option>@tags.Value</option>
+                }
+            </datalist>
         </div>
+    </div>
+
+    @for (int i = 0; i < customFields.Count; i++)
+    {
+        if (item.CustomFieldValues != null)
+        {
+            <input type="text" name="customField" value="@customFields[i].Id" style="display: none;">
+
+            <div class="form-group">
+                <label for="@item.CustomFieldValues.ElementAt(i).Value">@customFields[i].Title</label>
+                @if (customFields[i].CustomFieldType.Equals(CustomFieldType.Date))
+                {
+                    <input type="date" class="form-control" id="@item.CustomFieldValues.ElementAt(i).Value"
+                           value="@item.CustomFieldValues.ElementAt(i).Value" name="customFieldValue">
+                }
+                else
+                {
+                    <input type="text" class="form-control" id="@item.CustomFieldValues.ElementAt(i).Value"
+                           value="@item.CustomFieldValues.ElementAt(i).Value" name="customFieldValue" placeholder="Enter @customFields[i].Title">
+                }
+            </div>
+        }
+        else
+        {
+            <input type="text" name="customField" value="@customFields[i].Id" style="display: none;">
+
+            <div class="form-group">
+                <label for="@customFields[i].Title">@customFields[i].Title</label>
+                @if (customFields[i].CustomFieldType.Equals(CustomFieldType.Date))
+                {
+                    <input type="date" class="form-control" id="@customFields[i].Title"
+                           name="customFieldValue" placeholder="Enter @customFields[i].Title">
+                }
+                else
+                {
+                    <input type="text" class="form-control" id="@customFields[i].Title"
+                           name="customFieldValue" placeholder="Enter @customFields[i].Title">
+                }
+            </div>
+        }
     }
 
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary">@Localizer["Submit"]</button>
+
 </form>
 
 @section Scripts {
     <script>
-        function addTag() {
+        const tags = document.querySelector('.tags');
+
+        function addTag(text) {
             let container = document.getElementById("tagsDiv");
             let div = document.createElement("div");
-            div.setAttribute("class", "form-group");
 
             let field = document.createElement("input");
             field.setAttribute("class", "form-control");
             field.setAttribute("name", "tags");
-            field.setAttribute("type", "text");
+            field.setAttribute("type", "hidden");
+            field.setAttribute("value", text);
+            let span = document.createElement('span');
+            span.setAttribute("class", "spanTag");
+            span.innerHTML = text;
+            let spanClose = document.createElement('span');
+            spanClose.setAttribute("class", "spanClose");
+            spanClose.innerHTML = "x";
+            spanClose.setAttribute("onclick", "removeSpan(this)");
+            span.appendChild(spanClose);
 
             div.appendChild(field);
+            div.appendChild(span);
 
-            container.appendChild(div);
+            container.insertBefore(div, tags);
         }
+
+        document.onclick = function (e) {
+            if (event.target.className != 'tags') {
+                if (tags.value != "") {
+                    addTag(tags.value);
+                    tags.value = "";
+                }
+            };
+        };
+
+        function removeSpan(el) {
+            el.parentElement.parentElement.remove();
+        };
     </script>
 }

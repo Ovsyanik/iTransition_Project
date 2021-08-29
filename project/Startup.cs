@@ -12,6 +12,8 @@ using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
 using System.Globalization;
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace project
 {
@@ -29,6 +31,8 @@ namespace project
             services.AddLocalization(options => 
                 options.ResourcesPath = "Resources");
             services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve)
                 .AddDataAnnotationsLocalization()
                 .AddViewLocalization();
 

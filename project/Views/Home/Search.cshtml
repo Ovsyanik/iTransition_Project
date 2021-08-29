@@ -3,34 +3,23 @@
     List<Item> items = Model;
 }
 
-<div className = "shadow d-flex flex-column align-items-center mx-auto my-5 w-100 p-4">
-    <div className = "form-group mt-4 w-100">
-        <strong>Order by</strong>
-        <div className="btn-group btn-group-toggle w-100" data-toggle="buttons">
-            <label className="btn btn-secondary">
-               <input type="radio" name="options" id="option1" />
-               Title
-            </label>
-            <label className="btn btn-secondary">
-               <input type="radio" name="options" id="option2" value='likes' /> 
-               Likes
-            </label>
-            <label className="btn btn-secondary">
-            <input type="radio" name="options" id="option3" /> 
-               Date
-            </label>
-        </div>
+<h2 class="text-center">@Localizer["Items"]</h2>
+<div class="container">
+    <div class="d-flex flex-wrap">
+        @for (int i = 0; i < items.Count; i++)
+        {
+            <div style="height: 50px; width: 48%; margin: 5px 10px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px;" 
+                 onclick="goToItem(@Html.Raw(Json.Serialize(items[i].Id)))">
+                <div class="text-center" style="font-size: 20px">@items[i].Name</div>
+            </div>
+        }
     </div>
-    <div className = "form-group mt-4 w-100">
-        <strong>Filter by Title</strong>
-        <div>
-            <input type="input" className="form-control" placeholder='Title' />
-        </div>
-    </div>
-    @foreach(Item item in items) {
-        <div className = 'p-2 d-flex justify-content-around mt-4 w-100 rounded bg-light item__preview'>
-            <div>@item.Name</div>
-            <div>Likes:&nbsp;@item.Likes.Count</div>
-        </div>
-    }
 </div>
+
+@section Scripts {
+    <script>
+        function goToItem(id) {
+            window.location.href='@Url.Action("Item", "Home")?id=' + id;
+        }
+    </script>
+}

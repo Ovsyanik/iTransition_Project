@@ -4,33 +4,53 @@
     ViewData["Title"] = "Home Page";
     List<Item> lastItems = ViewData["LastItems"] as List<Item>;
     List<Collection> collections = ViewData["CollectionLargestItems"] as List<Collection>;
+    List<string> tags = ViewData["TagsList"] as List<string>;
+    var result = new Dictionary<string, int>();
+    var g = tags.GroupBy(i => i);
+    foreach (var k in g)
+    {
+        result.Add(k.Key, tags.Where(i => i == k.Key).Count());
+    }
 }
 
 <h2 class="text-ctenter">@Localizer["LastItems"]</h2>
 
-<div class="d-flex justify-content-between flex-wrap">
+<div class="d-flex justify-content-center flex-wrap" style="margin-top: 15px;">
     @foreach (Item item in lastItems)
     {
-        <div onclick="goToItem(@item.Id)" style="height: 75px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;">
-            <p class="text-center" style="margin-top=10px;font-weight:700">@item.Name</p>
-            <p class="text-center" style="margin-top=10px;font-weight:700">@item.Tags.ListToString()</p>
+        <div onclick="goToItem(@item.Id)" class="col-md-2" style="height: 75px; margin: 5px 10px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px; ">
+            <p class="text-center" style="font-size: 20px; margin-top: 15px; font-weight:700">@item.Name</p>
+            <p class="text-center" style="margin-top: -15px;">@item.Tags.ListToString()</p>
         </div>
     }
 </div>
 
-<h2 class="text-ctenter" style="margin-top: 20px">@Localizer["CollectionsLargestItems"]</h2>
+<h2 class="text-ctenter" style="margin-top: 30px">@Localizer["CollectionsLargestItems"]</h2>
 
-<div class="d-flex justify-content-between flex-wrap">
+<div class="d-flex justify-content-center flex-wrap" style="margin-top: 10px;">
     @foreach (Collection collection in collections)
     {
-        <div style="height: 260px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
+        <div style="height: 260px; width: 160px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px; margin: 5px 5px; "
              onclick="goToCollection(@collection.Id)">
-            <img style="margin-left:4px; margin-top: 5px" src="@collection.PathImage"
-                 width="160" height="150">
-            <p class="text-center" style="margin-top=10px;font-weight:700">@collection.Name</p>
+            <img style="margin-top: 5px; margin-left: 5px;"  src="@collection.PathImage"
+                 width="150" height="150">
+            <p class="text-center" style="font-size: 22px; font-weight:600">@collection.Name</p>
             <p class="text-justify" style="margin-left: 5px">@collection.Description</p>
         </div>
     }
+</div>
+
+<h3 class="text-center" style="margin-top: 15px">@Localizer["TagsCloud"]</h3>
+<div class="container">
+    <div class="row justify-content-center">
+        @foreach (var tag in result)
+        {
+            int size = (int)Math.Sqrt(Math.Sqrt(tag.Value) * 350);
+            string tagSize = size.ToString() + "px";
+            <a style="font-size:@tagSize; margin: 3px 8px; cursor: pointer" 
+               href='@Url.Action("GetItemByTag", "Home")?tag=@tag.Key'>@tag.Key</a>
+        }
+    </div>
 </div>
 
 @section Scripts {
@@ -41,6 +61,10 @@
 
         function goToCollection(id) {
             window.location.href='@Url.Action("Collection", "Collection")?id=' + id;
+        }
+
+        function getByTag(tag) {
+            window.location.href='@Url.Action("GetItemByTag", "Home")?tag=' + tag;
         }
     </script>
 }

@@ -1,9 +1,7 @@
 ﻿using project.Models.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace project.Models
 {
@@ -14,8 +12,11 @@ namespace project.Models
             StringBuilder builder = new StringBuilder();
             if (tags != null)
             {
-                tags.ToList().ForEach(tag => builder.Append(tag.Value + ", "));
-                builder.Remove(builder.Length - 2, 2);
+                if (tags.Count != 0)
+                {
+                    tags.ToList().ForEach(tag => builder.Append(tag.Value + ", "));
+                    builder.Remove(builder.Length - 2, 2);
+                }
             }
             return builder.ToString();
         }

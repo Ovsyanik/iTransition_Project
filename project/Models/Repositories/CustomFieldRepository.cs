@@ -67,5 +67,14 @@ namespace project.Models.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task EditCustomFieldAsync(int id, string title, CustomFieldType customFieldType)
+        {
+            CustomField customField = await _context.CustomFields
+                .FirstOrDefaultAsync(cf => cf.Id == id);
+            customField.Title = title;
+            customField.CustomFieldType = customFieldType;
+            await SaveAsync();
+        }
     }
 }

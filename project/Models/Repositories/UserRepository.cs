@@ -85,6 +85,6 @@ namespace project.Models.Repositories
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
-        }      
+        }
     }
 }

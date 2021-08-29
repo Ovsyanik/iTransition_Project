@@ -117,7 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AddItemTitle" xml:space="preserve">
+    <value>Добавить элемент</value>
+  </data>
   <data name="AddTag" xml:space="preserve">
     <value>Добавить тэг</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="NamePlaceholder" xml:space="preserve">
+    <value>Введите название</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Тэги</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Введите тэг</value>
   </data>
 </root>

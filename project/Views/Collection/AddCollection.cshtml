@@ -1,6 +1,5 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-
     List<CustomFieldType> customFieldTypes = new List<CustomFieldType>();
     customFieldTypes.Add(CustomFieldType.Checkbox);
     customFieldTypes.Add(CustomFieldType.Text);
@@ -16,10 +15,18 @@
     customFieldTypesString.Add(CustomFieldType.Number.ToString());
 
     List<SelectListItem> selectListItems = new List<SelectListItem>();
+
+    string userName = null;
+    if (ViewData["UserEmail"] != null)
+    {
+        userName = ViewData["UserEmail"].ToString();
+    }
+
     foreach (var type in customFieldTypes)
     {
         selectListItems.Add(new SelectListItem { Value = type.ToString(), Text = type.ToString() });
     }
+
     Collection collection = new Collection();
     if (Model != null)
     {
@@ -33,6 +40,11 @@
 <h2 class="text-center">@Localizer["AddCollection"]</h2>
 
 <form method="post" asp-controller="Collection" asp-action='@GetActionForm()' enctype="multipart/form-data">
+    @if(collection != null)
+     {
+        <input type="hidden" name="Id" value="@collection.Id" />
+     }
+    <input type="hidden" name="userEmail" value="@userName" />
     <div class="form-group">
         <label for="name">@Localizer["Name"]</label>
         <input type="text" class="form-control" id="name" name="name"
@@ -41,7 +53,7 @@
 
     <div class="form-group">
         <label for="theme">@Localizer["Theme"]</label>
-        <select id="theme" name="theme" class="form-control selectpicker"
+        <select id="type" name="theme" class="form-control selectpicker"
                 data-style="btn-success" required>
             <option>@TypeItem.Books</option>
             <option>@TypeItem.NewPapers</option>
@@ -57,26 +69,27 @@
 
     <input type="file" name="files" id="files" />
 
-    <div ondrop="callondrop(event);" ondragover="return false;" style=" height: 300px; width: 600px; background-color: skyblue;">
+    <div ondrop="callondrop(event);" ondragover="return false;" style="margin: 15px auto; height: 300px; width: 600px; background-color: lightgray;">
         <div id="placeholderImg" class="placeHolderMsg">
-            <strong>Drag and Drop Files Here</strong>
+
         </div>
     </div>
 
     <div class="row">
-        <div class="col-3">
+        <div class="col-md-2">
             <input type="button" class="btn btn-primary" value="@Localizer["AddField"]"
-                   onclick='newField(@Html.Raw(Json.Serialize(customFieldTypes)), @Html.Raw(Json.Serialize(customFieldTypesString)))'/>
+                   onclick='newField(@Html.Raw(Json.Serialize(selectListItems)))'/>
         </div>
-        <div id="fields" class="col-9">
+        <div id="fields" class="col-9 col-md-8" >
             @if (collection.Fields != null)
             {
                 foreach (CustomField field in collection.Fields)
                 {
                     <div class="form-group">
+                        <input type="hidden" name="fieldId" value="@field.Id" />
                         <input type="text" class="form-control" id="description" value="@field.Title"
-                               name="field" placeholder="Enter Field">
-                        <select asp-for="@field.CustomFieldType" asp-items='@selectListItems'
+                               name="field" placeholder="Enter Field" />
+                        <select asp-for="@field.CustomFieldType" name="newFieldType" asp-items='@selectListItems'
                                 class="form-control selectpicker" data-style="btn-success"></select>
                     </div>
                 }
@@ -84,7 +97,7 @@
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">@Localizer["Submit"]</button>
+    <button type="submit" style="margin-top:15px;" class="btn btn-primary">@Localizer["Submit"]</button>
 </form>
 
 @section Scripts {
@@ -98,7 +111,7 @@
             return false;
         }
 
-        function newField(customFieldTypes, customFieldTypesString) {
+        function newField(selectedListitems) {
             let container = document.getElementById("fields");
             let fieldCount = container.getElementsByTagName("input").length;
             let nextFieldId = fieldCount + 1;
@@ -113,14 +126,17 @@
 
             let typeField = document.createElement("select");
             typeField.setAttribute("class", "form-control selectpicker");
-            typeField.setAttribute("id", "FieldsType[" + nextFieldId + "]");
             typeField.setAttribute("name", "newFieldType");
             typeField.setAttribute("data-style", "btn-success");
 
-            for (let i = 0; i < customFieldTypes.length; i++) {
+            let types = Object.values(selectedListitems)
+
+            console.log(types[1]);
+
+            for (let i = 0; i < types[1].length; i++) {
                 let typeFieldTypes = document.createElement("option");
-                typeFieldTypes.setAttribute("value", customFieldTypes[i]);
-                typeFieldTypes.innerHTML = customFieldTypesString[i];
+                typeFieldTypes.setAttribute("value", types[1][i].text);
+                typeFieldTypes.innerHTML = types[1][i].text;
                 typeField.appendChild(typeFieldTypes);
             }
 

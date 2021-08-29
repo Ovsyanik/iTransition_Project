@@ -123,6 +123,9 @@
   <data name="DeleteCollection" xml:space="preserve">
     <value>Delete collection</value>
   </data>
+  <data name="DeleteCollectionText" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
   <data name="DescriptionTitle" xml:space="preserve">
     <value>Description</value>
   </data>

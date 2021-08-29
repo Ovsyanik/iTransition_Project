@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace project.Models.Entities
 {
@@ -9,6 +8,8 @@ namespace project.Models.Entities
     {
         public int Id { get; set; }
 
+        [MaxLength(50)]
+        [NotNull]
         public string Name { get; set; }
 
         public int CollectionId { get; set; }

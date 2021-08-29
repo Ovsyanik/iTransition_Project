@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using project.Models.Entities;
-using System;
 
 namespace project.Models
 {
@@ -16,7 +14,6 @@ namespace project.Models
         public DbSet<CustomField> CustomFields { get; set; }
         public DbSet<CustomFieldValue> CustomFieldValues { get; set; }
 
-
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
             Database.EnsureCreated();
@@ -28,6 +25,15 @@ namespace project.Models
                 .HasOne(p => p.Item)
                 .WithMany(t => t.Tags)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Role = 0,
+                    UserName = "Roman",
+                    Email = "ovsyanik_roma@mail.ru",
+                    PasswordHash = "Gc8ZEFHmu0/B4H8jSh/GrNUX/Kec5PGNYmWt7BODoj6RSXkTRdeL0p+o33WghSeLzWjkjsfiIqSemRmnhvq5Tg=="
+                });
         }
     }
 }

@@ -124,4 +124,7 @@
     <value>Последние добавленные элементы</value>
     <comment>Последние добавленные элементы</comment>
   </data>
+  <data name="TagsCloud" xml:space="preserve">
+    <value>Облако тегов</value>
+  </data>
 </root>

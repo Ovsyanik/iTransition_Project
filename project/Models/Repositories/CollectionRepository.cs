@@ -11,10 +11,12 @@ namespace project.Models.Repositories
     {
         private readonly MyDbContext _context;
 
+
         public CollectionRepository(MyDbContext context)
         {
             _context = context;
         }
+
 
         public async Task<Collection> GetByIdAsync(int id)
         {
@@ -27,11 +29,13 @@ namespace project.Models.Repositories
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
+
         public List<Collection> GetAllByUser(User user)
         {
             return _context.Collections
                 .Where(c => c.User.Id == user.Id).ToList();
         }
+
 
         public async Task<List<Collection>> GetCollectionsLargestItem()
         {
@@ -39,6 +43,7 @@ namespace project.Models.Repositories
                 .OrderByDescending(c => c.Items.Count).Take(6).ToListAsync();
             return collections;
         }
+
 
         public async Task<int> AddAsync(Collection collection)
         {
@@ -56,9 +61,86 @@ namespace project.Models.Repositories
         }
 
 
+        public async Task<Collection> SortByIdAsync(int id)
+        {
+            Collection collection = await GetByIdAsync(id);
+            if (SortViewModel.SortId)
+            {
+                collection.Items = collection.Items.OrderByDescending(i => i.Id).ToList();
+                SortViewModel.SortId = false;
+            }
+            else
+            {
+                collection.Items = collection.Items.OrderBy(i => i.Id).ToList();
+                SortViewModel.SortId = true;
+            }
+            return collection;
+        }
+
+
+        public async Task<Collection> SortByNameAsync(int id)
+        {
+            Collection collection = await GetByIdAsync(id);
+            if (SortViewModel.SortName)
+            {
+                collection.Items = collection.Items.OrderByDescending(i => i.Name).ToList();
+                SortViewModel.SortName = false;
+            }
+            else
+            {
+                collection.Items = collection.Items.OrderBy(i => i.Name).ToList();
+                SortViewModel.SortName = true;
+            }
+            return collection;
+        }
+
+
+        public async Task<Collection> FilterByName(int id, string text)
+        {
+            Collection collection = await GetByIdAsync(id);
+            List<Item> items = new List<Item>();
+            foreach (Item item in collection.Items)
+            {
+                if (item.Name.Contains(text)) 
+                    items.Add(item);
+            }
+            collection.Items = items;
+            return collection;
+        }
+
+
+        public async Task<Collection> FilterByTags(int id, string tags)
+        {
+            Collection collection = await GetByIdAsync(id);
+            List<Item> items = new List<Item>();
+            foreach (Item item in collection.Items)
+            {
+                if(item.Tags.ListToString().Contains(tags))
+                    items.Add(item);
+            }
+            collection.Items = items;
+            return collection;
+        }
+
+
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<Collection> EditCollection(Collection newCollection)
+        {
+            Collection collection = await GetByIdAsync(newCollection.Id);
+            collection.Name = newCollection.Name;
+            collection.Description = newCollection.Description;
+            collection.Type = newCollection.Type;
+            if (newCollection.PathImage != null)
+            {
+                collection.PathImage = newCollection.PathImage;
+            }
+            await SaveAsync();
+            return collection;
         }
     }
 }

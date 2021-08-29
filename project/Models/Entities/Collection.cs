@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace project.Models.Entities
 {
@@ -9,6 +9,7 @@ namespace project.Models.Entities
 
         public string Name { get; set; }
 
+        [MaxLength(200)]
         public string Description { get; set; }
 
         public string PathImage { get; set; }

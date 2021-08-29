@@ -1,13 +1,12 @@
 ﻿using System;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Diagnostics;
 using project.Models;
 using project.Models.Entities;
 using project.Models.Repositories;
-
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 
@@ -41,6 +40,7 @@ namespace project.Controllers
             ViewData["LastItems"] = await _itemRepository.GetLastItemsAsync();
             var collections = await _collectionRepository.GetCollectionsLargestItem();
             ViewData["CollectionLargestItems"] = collections;
+            ViewData["TagsList"] = await _tagRepository.GetAllValuesAsync();
             return View();
         }
 
@@ -50,8 +50,10 @@ namespace project.Controllers
         {
             Item item = await _itemRepository.GetItemByIdAsync(itemId);
             var fields = await _customFieldRepository.GetAllAsync(id);
+            var tags = await _tagRepository.GetAllAsync();
             ViewData["CollectionId"] = id;
             ViewData["CustomFields"] = fields;
+            ViewData["tags"] = tags;
             return View(item);
         }
 
@@ -122,13 +124,25 @@ namespace project.Controllers
         }
 
 
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
+        public ActionResult GetComments(int itemId)
+        {
+            List<Comment> comments = _itemRepository.GetCommentsAsync(itemId);
+            return Json(comments);
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> EditItem(int id)
         {
             Item item = await _itemRepository.GetItemByIdAsync(id);
+            var fields = await _customFieldRepository.GetAllAsync(item.Collection.Id);
             ViewData["Field"] = await _customFieldRepository.GetAllAsync(item.CollectionId);
             ViewData["FieldValue"] = await _customFieldRepository.GetAllValuesAsync(item.CollectionId);
+            ViewData["CollectionId"] = item.Collection.Id;
+            ViewData["tags"] = await _tagRepository.GetAllAsync();
+            ViewData["CustomFields"] = fields;
             return View("AddItem", item);
         }
 
@@ -142,12 +156,43 @@ namespace project.Controllers
 
 
         [HttpPost]
+        public async Task<JsonResult> GetTags(string text)
+        {
+            List<Tags> tags = await _tagRepository.GetAllAsync();
+            return Json(tags);
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetItemByTag(string tag)
+        {
+            List<Item> items = await _itemRepository.GetByTagAsync(tag);
+            return View("Search", items);
+        }
+
+
+        [HttpPost]
         [AllowAnonymous]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
             Response.Cookies.Append(
                 CookieRequestCultureProvider.DefaultCookieName,
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return LocalRedirect(returnUrl);
+        }
+
+
+        [HttpPost]
+        [AllowAnonymous]
+        public IActionResult SetTheme(string theme, string returnUrl)
+        {
+            Response.Cookies.Append(
+                "Theme",
+                theme,
                 new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
             );
 

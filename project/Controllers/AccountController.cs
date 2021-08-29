@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using project.Models.Entities;
 using project.Models.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace project.Controllers
@@ -37,11 +40,15 @@ namespace project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AuthenticationUser(string email, string password)
         {
-            IdentityUser user = await _userRepository.AuthenticateAsync(email, password);
+            byte[] result = GenerateHash(email, password);
+
+            User user = await _userRepository.AuthenticateAsync(email, ByteToString(result));
 
             if (user != null)
             {
                 await Authenticate(user.Email);
+
+                Models.Entities.User.GetInstance(user.Email, user.Role);
 
                 return RedirectToAction("Index", "Home", new { email = email });
             }
@@ -82,7 +89,7 @@ namespace project.Controllers
         {
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
 
-            User user, checkUser, user1;
+            User user, checkUser;
 
             if (info.LoginProvider == "Google")
             {
@@ -141,11 +148,13 @@ namespace project.Controllers
 
             if (user == null)
             {
+                byte[] result = GenerateHash(email, password);
+
                 User newUser = new User
                 {
                     UserName = userName,
                     Email = email,
-                    PasswordHash = password,
+                    PasswordHash = ByteToString(result),
                     Role = RoleUser.User
                 };
                 
@@ -171,6 +180,21 @@ namespace project.Controllers
                 ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+        }
+
+
+        private string ByteToString(byte[] bytes)
+        {
+            return Convert.ToBase64String(bytes);
+        }
+
+
+        private byte[] GenerateHash(string salt, string password) 
+        {
+            SHA512 sha = new SHA512Managed();
+            string passwordWothSalt = salt + password;
+            byte[] dataByte = Encoding.Default.GetBytes(passwordWothSalt);
+            return sha.ComputeHash(dataByte);
         }
     }
 }

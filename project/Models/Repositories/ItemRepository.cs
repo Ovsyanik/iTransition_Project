@@ -24,7 +24,6 @@ namespace project.Models.Repositories
                 .Include(i => i.Comments)
                 .Include(i => i.Tags)
                 .Include(i => i.CustomFieldValues)
-                .Include(i => i.CustomFieldValues)
                 .FirstOrDefaultAsync(i => i.Id == id);
         }
 
@@ -45,14 +44,22 @@ namespace project.Models.Repositories
         }
 
 
+        public List<Comment> GetCommentsAsync(int id)
+        {
+            return _context.Comments
+                .Where(c => c.Item.Id == id)
+                .OrderByDescending(c => c.Id)
+                .ToList();
+        }
+
+
         public async Task<List<Item>> SearchItems(string query)
         {
-            return await _context.Items.Include(i => i.Collection)
-                .Include(i => i.Comments).Include(i => i.Likes)
-                .Where(i => i.Name.Contains(query) || 
-                i.Collection.Description.Contains(query) || 
-                i.Comments.Any(c => c.Text.Contains(query)) || 
-                i.CustomFields.Any(f => f.Title.Contains(query)))
+            return await _context.Items.Where(i => 
+                EF.Functions.FreeText(i.Name, query) || 
+                EF.Functions.FreeText(i.Collection.Description, query) || 
+                i.Comments.Any(c => EF.Functions.FreeText(c.Text, query)) || 
+                i.CustomFieldValues.Any(f => EF.Functions.FreeText(f.Value, query)))
                 .ToListAsync();
         }
 
@@ -137,6 +144,15 @@ namespace project.Models.Repositories
         private async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Item>> GetByTagAsync(string tag)
+        {
+            return await _context.Items
+                .Include(i => i.CustomFieldValues)
+                .Include(i => i.Tags)
+                .SelectMany(t => t.Tags, (i, t) => new { Item = i, Tag = t })
+                .Where(t => t.Tag.Value == tag).Select(t => t.Item).ToListAsync();
         }
     }
 }

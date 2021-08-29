@@ -1,6 +1,26 @@
 ﻿@inject IViewLocalizer Localizer
 @{
     User user = project.Models.Entities.User.GetInstance();
+    string GetTheme()
+    {
+        if (Context.Request.Cookies["Theme"].Equals("light"))
+            return "bg-white navbar-light";
+        else return "bg-dark navbar-dark";
+    }
+
+    string GetThemeForButton()
+    {
+        if (Context.Request.Cookies["Theme"].Equals("light"))
+            return "text-dark";
+        else return "text-light";
+    }
+
+       string GetThemeBody()
+    {
+        if (Context.Request.Cookies["Theme"].Equals("light"))
+            return "background-color: #ffffff";
+        else return "background-color: #EDEEFF";
+    }
 }
 
 <!DOCTYPE html>
@@ -13,9 +33,9 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css">
 </head>
-<body>
+<body style="@GetThemeBody()">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm @GetTheme() border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">Project</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -29,7 +49,7 @@
                             if (user.Role == RoleUser.User)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Collection" asp-action="Collections">Personal</a>
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Collection" asp-action="Collections">@Localizer["Personal"]</a>
                                 </li>
                             }
                         }
@@ -38,7 +58,7 @@
                             if (user.Role == RoleUser.Admin)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Admin">Admin</a>
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Admin" asp-action="Admin">@Localizer["Admin"]</a>
                                 </li>
                             }
                         }
@@ -53,7 +73,7 @@
                                     <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
                                         <i class="fa fa-search"></i>
                                     </button>
-                                    <input type="text" name="searchText" placeholder="@Localizer["Search"]..." />
+                                    <input type="text" name="searchText" placeholder="@Localizer["Search"]..." autocomplete="off"/>
                                 </form>
                             </div>
                         </li>
@@ -61,16 +81,16 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="SignOut">@Localizer["SignOut"]</a>
+                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="SignOut">@Localizer["SignOut"]</a>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">@Localizer["Register"]</a>
+                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Registration">@Localizer["Register"]</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Authentication">@Localizer["Login"]</a>
+                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Authentication">@Localizer["Login"]</a>
                             </li>
                         }
                     </ul>
@@ -84,10 +104,13 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted @GetTheme()">
         <div class="container">
             &copy; 2021 - project - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-            <div class="float-right">
+            <div class="float-right row">
+                <div style="margin-right: 15px;">
+                    @await Html.PartialAsync("_SelectThemePartial")
+                </div>
                 @await Html.PartialAsync("_SelectLanguagePartial")
             </div>
         </div>

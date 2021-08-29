@@ -10,6 +10,13 @@
     var cultureItems = LocOptions.Value.SupportedUICultures
         .Select(c => new SelectListItem { Value = c.Name, Text = c.NativeName })
         .ToList();
+
+    string GetTheme()
+    {
+        if (Context.Request.Cookies["Theme"].Equals("light"))
+            return "bg-light text-dark";
+        else return "bg-dark text-light";
+    }
 }
 
 <form asp-controller="Home" asp-action="SetLanguage"
@@ -18,5 +25,6 @@
     <select name="culture" onchange="this.form.submit();"
             asp-for="@requestCulture.RequestCulture.UICulture.Name"
             asp-items="cultureItems"
+            class="@GetTheme()"
             style="border: 0px"></select>
 </form>

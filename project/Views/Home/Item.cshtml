@@ -3,21 +3,63 @@
     Item item = Model;
     List<CustomField> fields = ViewData["Field"] as List<CustomField>;
     List<CustomFieldValue> values = ViewData["FieldValue"] as List<CustomFieldValue>;
+
+    string GetCollorLike() {
+        if(item.Likes.FirstOrDefault(l => l.UserName == User.Identity.Name) == null)
+        {
+            return "#ffffff";
+        } else
+        {
+            return "#FF5C7C";
+        }
+    }
 }
 
-<div >
-    <h4>Name: @item.Name</h4>
-    <h4>Collection: @item.Collection.Name</h4>
-    <h4>Tags: @item.Tags.ListToString()</h4>
-    @for (int i = 0; i < fields.Count; i++)
-    {
-        <h4>@fields[i].Title: @values[i].Value</h4>
+<style>
+    .commentInput {
+        width: 25vw;
     }
+    .commentInputHeight {
+        height: 50px;
+    }
+    @@media (max-width: 600px) {
+        .commentInput {
+            width: 64vw;
+            
+        }
+        .commentInputHeight {
+            height: 40px;
+        }
+    }
+</style>
 
+<div class="d-flex flex-wrap">
+    <div class="col-md-2"></div>
+    <div class="col-md-3">
+        <strong>Item</strong>
+        <p>Name: @item.Name</p>
+        <p>Tags: @item.Tags.ListToString()</p>
+        <p>Creator: @item.Collection.User.Email</p>
+        @for (int i = 0; i < fields.Count; i++)
+        {
+            <p>@fields[i].Title: @values[i].Value</p>
+        }
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-1"></div>
+    <div class="col-md-3">
+        <strong>Collection</strong>
+        <p>Name: @item.Collection.Name</p>
+        <p>Theme: @item.Collection.Type</p>
+        <p>Description: @item.Collection.Description</p>
+    </div>
+    <div class="col-md-2"></div>
 </div>
-<div>
-    <button class="btn btn-primary" onclick="addLike(@item.Id)">Add Like</button>
-    <span>Likes: @item.Likes.Count</span>
+<div class="float-right row" style="margin-top:30px;">
+    <div id="likeDiv" style="background-color: @GetCollorLike(); width: 30px; height: 30px; border-radius: 15px;">
+        <img onclick="addLike(@item.Id)" src="~/like_icon.png" width="24" style="margin-left: 3px;" height="24" />
+    </div>
+    <span style="margin-left: 3px;">Likes: @item.Likes.Count</span>
 </div>
 
 @if (User.Identity.IsAuthenticated)
@@ -35,24 +77,40 @@
     }
 }
 
+<hr/>
 
-<div className='d-flex flex-column align-items-center m-3 p-2 shadow rounded'>
+<strong class="text-center">Comments</strong>
+
+<div class="container" style="margin-top:15px;">
+
     <form asp-controller="Home" asp-action="AddComment">
-        <input type="hidden" name="itemId" value="@item.Id">
-        <input type="text" className="form-control mb-4" name="text"
-                  placeholder='Write comment...' class="col-md-6 text-center" style="height: 50px"></input>
-        <button class="btn btn-primary" type="submit" style="height: 50px; position: absolute">Add Comment</button>
+        <div class='row'>
+            <div class="col-md-2"></div>
+            <div class="input-group col-md-8 row">
+                <input type="hidden" name="itemId" value="@item.Id">
+                <input type="text" name="text"
+                       class="text-center commentInput commentInputHeight"
+                       placeholder='@Localizer["WriteComment"]...' />
+                <div class="input-group-append" style="width: 25%">
+                    <button class="btn btn-primary col-md-12 commentInputHeight" type="submit"
+                            style="width: 100%">
+                        @Localizer["AddComment"]
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
     </form>
 </div>
 
 
-<div class='d-flex flex-column align-items-center p-3'>
+<div class='d-flex flex-column align-items-center p-3' id="comments">
     @if (item.Comments != null)
     {
         foreach (Comment comment in item.Comments)
         {
-            <div className='shadow-sm d-flex flex-column align-items-center w-100 mb-4 border rounded'>
-                <div className='d-flex flex-column align-items-center w-100 p-1 border-bottom text-secondary'>
+            <div class='shadow-sm d-flex flex-column align-items-center w-100 mb-4 border rounded'>
+                <div class='d-flex flex-column align-items-center w-100 p-1 border-bottom text-secondary'>
                     <em>@comment.Author</em>
                     <em>Created:&nbsp;@comment.CreatedDate</em>
                 </div>
@@ -69,10 +127,10 @@
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Удалить элемент?</h4>
+                <h4 class="modal-title">@Localizer["DeleteItem"]?</h4>
             </div>
             <div class="modal-body">
-                <h4 class="modal-content">После удаления вы потеряете все данные</h4>
+                <h4 class="modal-content">@Localizer["DeleteItemText"]</h4>
             </div>
             <div class="modal-footer">
                 
@@ -85,7 +143,27 @@
 
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
+        let comments = document.querySelector("#comments");
+        function requstComments(itemId) {
+            axios.post("/Home/GetComments?itemId=" + itemId)
+                .then(response => {
+                    while (comments.firstChild) {
+                        comments.removeChild(comments.firstChild);
+                    };
+                    let data = Object.values(response.data);
+                    data[1].forEach(element => {
+                        comments.innerHTML += `<div class='shadow-sm d-flex flex-column align-items-center w-100 mb-4 border rounded'>` +
+                            `<div class='d-flex flex-column align-items-center w-100 p-1 border-bottom text-secondary'>` +
+                            `<em>${element.author}</em><em>Created:&nbsp;${element.createdDate}</em></div> <div className='mw-100 p-3'>` +
+                            `<em>${element.text}</em></div></div>`
+                    })
+                })
+                .catch(error => console.log(error));
+        }
+
         function addLike(id) {
             window.location.href='@Url.Action("AddLike", "Home")?id=' + id;
         }
@@ -94,5 +172,6 @@
             $('#modal').modal();
         }
 
+        setInterval(requstComments, 5000, @Html.Raw(Json.Serialize(item.Id)));
     </script>
 }

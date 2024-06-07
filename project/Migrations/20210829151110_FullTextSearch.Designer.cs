@@ -9,7 +9,7 @@ using project.Models;
 
 namespace project.Migrations
 {
-    [DbContext(typeof(MyDbContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20210829151110_FullTextSearch")]
     partial class FullTextSearch
     {

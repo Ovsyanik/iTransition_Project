@@ -7,50 +7,45 @@ using System.Threading.Tasks;
 
 namespace project.Models.Repositories
 {
-    public class CustomFieldRepository 
+    public class CustomFieldRepository : ICustomFieldRepository
     {
-        private readonly MyDbContext _context;
+        private readonly ApplicationContext _db;
 
-        public CustomFieldRepository(MyDbContext context)
+        public CustomFieldRepository(ApplicationContext db)
         {
-            _context = context;
+            _db = db;
         }
-
 
         public async Task<List<CustomField>> GetAllAsync(int id)
         {
-            return await _context.CustomFields.Where(c => c.CollectionId == id).ToListAsync();
+            return await _db.CustomFields.Where(c => c.CollectionId == id).ToListAsync();
         }
-
 
         public async Task<List<CustomFieldValue>> GetAllValuesAsync(int collectionId)
         {
-            return await _context.CustomFieldValues
+            return await _db.CustomFieldValues
                 .Where(c => c.CollectionId == collectionId)
                 .ToListAsync();
         }
 
-
         public async Task AddAsync(CustomField customField)
         {
-            await _context.CustomFields.AddAsync(customField);
+            await _db.CustomFields.AddAsync(customField);
             await SaveAsync();
         }
 
-
         public async Task<CustomFieldValue> AddCustomFieldValueAsync(CustomFieldValue value)
         {
-            await _context.CustomFieldValues.AddAsync(value);
+            await _db.CustomFieldValues.AddAsync(value);
             await SaveAsync();
 
             return value;
         }
 
-
         public async Task DeleteValuesByIdAsync(int collectionId)
         {
             List<CustomFieldValue> values = await GetAllValuesAsync(collectionId);
-            values.ForEach(v => _context.CustomFieldValues.Remove(v));
+            values.ForEach(v => _db.CustomFieldValues.Remove(v));
             await SaveAsync();
         }
 
@@ -58,22 +53,30 @@ namespace project.Models.Repositories
         public async Task DeleteByIdAsync(int collectionId)
         {
             List<CustomField> fields = await GetAllAsync(collectionId);
-            fields.ForEach(f => _context.CustomFields.Remove(f));
+            fields.ForEach(f => _db.CustomFields.Remove(f));
             await SaveAsync();
         }
 
 
-        private async Task SaveAsync()
+        public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
 
         public async Task EditCustomFieldAsync(int id, string title, CustomFieldType customFieldType)
         {
-            CustomField customField = await _context.CustomFields
+            CustomField customField = await _db.CustomFields
                 .FirstOrDefaultAsync(cf => cf.Id == id);
             customField.Title = title;
             customField.CustomFieldType = customFieldType;
+            await SaveAsync();
+        }
+
+        public async Task EditCustomFieldValueAsync(int id, string value)
+        {
+            CustomFieldValue customField = await _db.CustomFieldValues
+                .FirstOrDefaultAsync(c => c.Id == id);
+            customField.Value = value;
             await SaveAsync();
         }
     }

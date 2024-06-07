@@ -15,21 +15,11 @@ namespace project.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ItemRepository _itemRepository;
-        private readonly TagRepository _tagRepository;
-        private readonly CollectionRepository _collectionRepository;
-        private readonly CustomFieldRepository _customFieldRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HomeController(
-            TagRepository tagRepository,
-            ItemRepository itemReposetory, 
-            CollectionRepository collectionRepository, 
-            CustomFieldRepository customFieldRepository)
+        public HomeController(IUnitOfWork unitOfWork)
         {
-            _tagRepository = tagRepository;
-            _itemRepository = itemReposetory;
-            _collectionRepository = collectionRepository;
-            _customFieldRepository = customFieldRepository;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -37,10 +27,9 @@ namespace project.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            ViewData["LastItems"] = await _itemRepository.GetLastItemsAsync();
-            var collections = await _collectionRepository.GetCollectionsLargestItem();
-            ViewData["CollectionLargestItems"] = collections;
-            ViewData["TagsList"] = await _tagRepository.GetAllValuesAsync();
+            ViewData["LastItems"] = await _unitOfWork.Items.GetLastItemsAsync();
+            ViewData["CollectionLargestItems"] = await _unitOfWork.Collections.GetCollectionsLargestItemAsync();
+            ViewData["TagsList"] = await _unitOfWork.Tags.GetAllValuesAsync();
             return View();
         }
 
@@ -48,12 +37,10 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> AddItem(int id, int itemId)
         {
-            Item item = await _itemRepository.GetItemByIdAsync(itemId);
-            var fields = await _customFieldRepository.GetAllAsync(id);
-            var tags = await _tagRepository.GetAllAsync();
+            Item item = await _unitOfWork.Items.GetByIdAsync(itemId);
             ViewData["CollectionId"] = id;
-            ViewData["CustomFields"] = fields;
-            ViewData["tags"] = tags;
+            ViewData["CustomFields"] = await _unitOfWork.CustomFields.GetAllAsync(id);
+            ViewData["tags"] = await _unitOfWork.Tags.GetAllAsync();
             return View(item);
         }
 
@@ -64,13 +51,13 @@ namespace project.Controllers
             List<Tags> tags2 = new List<Tags>();
             foreach(string tag in tags)
             {
-                tags2.Add(await _tagRepository.AddAsync(new Tags { Value = tag }));
+                tags2.Add(await _unitOfWork.Tags.AddAsync(new Tags { Value = tag }));
             }
 
             List<CustomFieldValue> fields = new List<CustomFieldValue>();
             for (int i = 0; i < customFieldValue.Length; i++)
             {
-                fields.Add(await _customFieldRepository.AddCustomFieldValueAsync(
+                fields.Add(await _unitOfWork.CustomFields.AddCustomFieldValueAsync(
                     new CustomFieldValue
                     {
                         Value = customFieldValue[i],
@@ -79,11 +66,12 @@ namespace project.Controllers
                     }));
             }
 
-            await _itemRepository.AddAsync(collectionId, new Item { 
+            await _unitOfWork.Items.AddAsync(collectionId, new Item { 
                 Tags = tags2, 
                 Name = name, 
                 CollectionId = collectionId, 
                 CustomFieldValues = fields });
+
             return RedirectToAction("Collection", "Collection", new { id = collectionId });
         }
 
@@ -92,7 +80,7 @@ namespace project.Controllers
         public async Task<IActionResult> AddComment(int itemId, string text)
         {
             string name = User.Identity.Name;
-            Item item = await _itemRepository.AddCommentAsync(itemId, text, name);
+            Item item = await _unitOfWork.Items.AddCommentAsync(itemId, text, name);
             return RedirectToAction("Item", new { id = item.Id});
         }
 
@@ -101,14 +89,14 @@ namespace project.Controllers
         public async Task<IActionResult> AddLike(int id)
         {
             string name = User.Identity.Name;
-            Item item = await _itemRepository.AddOrDeleteLikeAsync(id, name);
+            Item item = await _unitOfWork.Items.AddOrDeleteLikeAsync(id, name);
             return RedirectToAction("Item", new { id = item.Id });
         }
 
 
         public async Task<IActionResult> DeleteItem(int collectionId, int id)
         {
-            await _itemRepository.DeleteAsync(collectionId, id);
+            await _unitOfWork.Items.DeleteAsync(collectionId, id);
             return RedirectToAction("Collections", "Collection");
         }
 
@@ -117,18 +105,18 @@ namespace project.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Item(int id)
         {
-            Item item = await _itemRepository.GetItemByIdAsync(id);
-            ViewData["Field"] = await _customFieldRepository.GetAllAsync(item.CollectionId);
-            ViewData["FieldValue"] = await _customFieldRepository.GetAllValuesAsync(item.CollectionId);
+            Item item = await _unitOfWork.Items.GetByIdAsync(id);
+            ViewData["Field"] = await _unitOfWork.CustomFields.GetAllAsync(item.CollectionId);
+            ViewData["FieldValue"] = await _unitOfWork.CustomFields.GetAllValuesAsync(item.CollectionId);
             return View(item);
         }
 
 
         [HttpPost]
         [AllowAnonymous]
-        public ActionResult GetComments(int itemId)
+        public async Task<IActionResult> GetComments(int itemId)
         {
-            List<Comment> comments = _itemRepository.GetCommentsAsync(itemId);
+            List<Comment> comments = await _unitOfWork.Items.GetCommentsAsync(itemId);
             return Json(comments);
         }
 
@@ -136,29 +124,44 @@ namespace project.Controllers
         [HttpGet]
         public async Task<IActionResult> EditItem(int id)
         {
-            Item item = await _itemRepository.GetItemByIdAsync(id);
-            var fields = await _customFieldRepository.GetAllAsync(item.Collection.Id);
-            ViewData["Field"] = await _customFieldRepository.GetAllAsync(item.CollectionId);
-            ViewData["FieldValue"] = await _customFieldRepository.GetAllValuesAsync(item.CollectionId);
+            Item item = await _unitOfWork.Items.GetByIdAsync(id);
+            ViewData["Field"] = await _unitOfWork.CustomFields.GetAllAsync(item.CollectionId);
+            ViewData["FieldValue"] = await _unitOfWork.CustomFields.GetAllValuesAsync(item.CollectionId);
             ViewData["CollectionId"] = item.Collection.Id;
-            ViewData["tags"] = await _tagRepository.GetAllAsync();
-            ViewData["CustomFields"] = fields;
+            ViewData["tags"] = await _unitOfWork.Tags.GetAllAsync();
+            ViewData["CustomFields"] = await _unitOfWork.CustomFields.GetAllAsync(item.Collection.Id);
             return View("AddItem", item);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> EditItem(Item item, string[] tags, int[] fieldId, string[] customFieldValue)
+        {
+            await _unitOfWork.Items.EditAsync(item, tags, fieldId, customFieldValue);
+            return RedirectToAction("Item", new { id = item.Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteTag(int id, int idTag)
+        {
+            await _unitOfWork.Items.DeleteTagAsync(id, idTag);
+            return Ok();
+        }
+        
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Search(string searchText)
         {
-            List<Item> items = await _itemRepository.SearchItems(searchText);
+            List<Item> items = await _unitOfWork.Items.SearchItems(searchText);
             return View(items);
         }
 
 
         [HttpPost]
-        public async Task<JsonResult> GetTags(string text)
+        public async Task<IActionResult> GetTags(string text)
         {
-            List<Tags> tags = await _tagRepository.GetAllAsync();
+            List<Tags> tags = await _unitOfWork.Tags.GetAllAsync();
             return Json(tags);
         }
 
@@ -167,7 +170,7 @@ namespace project.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetItemByTag(string tag)
         {
-            List<Item> items = await _itemRepository.GetByTagAsync(tag);
+            List<Item> items = await _unitOfWork.Items.GetByTagAsync(tag);
             return View("Search", items);
         }
 

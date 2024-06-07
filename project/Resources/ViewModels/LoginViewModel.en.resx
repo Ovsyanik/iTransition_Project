@@ -117,13 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ExternalLoginTitle" xml:space="preserve">
-    <value>Вход через стороние сервисы </value>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
   </data>
-  <data name="LocalLoginTitle" xml:space="preserve">
-    <value>Вход в локальную учетную запись</value>
+  <data name="EmailAddress" xml:space="preserve">
+    <value>Input valid Email</value>
   </data>
-  <data name="Submit" xml:space="preserve">
-    <value>Отправить</value>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Enter Email</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Field Email is required</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Enter Password</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Field Password is required</value>
+  </data>
+  <data name="PasswordType" xml:space="preserve">
+    <value>Input valid Password</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Remember me?</value>
   </data>
 </root>

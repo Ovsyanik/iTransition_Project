@@ -1,6 +1,5 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-    List<Collection> collections = Model;
     string userEmail = null;
     if(ViewData["UserEmail"] != null)
     {
@@ -13,7 +12,7 @@
 <h2 class="text-center">@Localizer["MyCollections"]</h2>
 
 <div class="d-flex justify-content-between flex-wrap">
-    @foreach (Collection collection in collections)
+    @foreach (Collection collection in (Model as List<Collection>))
     {
     <div >
         <div style="height: 250px; width: 170px; background-color: lightgray; border: 1px solid lightgray; border-radius: 10px; margin-top: 10px;"
@@ -29,7 +28,6 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         function goToCollection(id) {
             window.location.href='@Url.Action("Collection", "Collection")?id=' + id;

@@ -8,10 +8,12 @@
     {
         item = Model;
     }
+}
 
+@functions {
     string GetActionForm()
     {
-        return item.Id == 0 ? "AddItem" : "EditItem";
+        return Model == null ? "AddItem" : "EditItem";
     }
 }
 
@@ -40,10 +42,11 @@
                 foreach (var tag in item.Tags)
                 {
                     <div>
+                        <input type="hidden" name="tagsId" value="@tag.Id" class="idTag" />
                         <input name="tags" type="hidden" value="@tag.Value" />
                         <span class="spanTag">
                             @tag.Value
-                            <span class="spanClose" onclick="removeSpan(this)">x</span>
+                            <span class="spanClose" onclick="removeSpan(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(tag.Id)),this)">x</span>
                         </span>
                     </div>
                 }
@@ -68,6 +71,7 @@
 
             <div class="form-group">
                 <label for="@item.CustomFieldValues.ElementAt(i).Value">@customFields[i].Title</label>
+                <input type="hidden" name="fieldId" value="@item.CustomFieldValues.ElementAt(i).Id" />
                 @if (customFields[i].CustomFieldType.Equals(CustomFieldType.Date))
                 {
                     <input type="date" class="form-control" id="@item.CustomFieldValues.ElementAt(i).Value"
@@ -99,12 +103,11 @@
             </div>
         }
     }
-
     <button type="submit" class="btn btn-primary">@Localizer["Submit"]</button>
-
 </form>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const tags = document.querySelector('.tags');
 
@@ -141,8 +144,10 @@
             };
         };
 
-        function removeSpan(el) {
+        function removeSpan(id, idTag, el) {
+            console.log(idTag)
             el.parentElement.parentElement.remove();
+            axios.post("/Home/DeleteTag?idTag=" + idTag + "&id=" + id);
         };
     </script>
 }

@@ -117,13 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ExternalLoginTitle" xml:space="preserve">
-    <value>Вход через стороние сервисы </value>
+  <data name="ConfirmedPassword" xml:space="preserve">
+    <value>Пароль подтверждения</value>
   </data>
-  <data name="LocalLoginTitle" xml:space="preserve">
-    <value>Вход в локальную учетную запись</value>
+  <data name="ConfirmedPasswordPrompt" xml:space="preserve">
+    <value>Введите пароль подтверждения</value>
   </data>
-  <data name="Submit" xml:space="preserve">
-    <value>Отправить</value>
+  <data name="Email" xml:space="preserve">
+    <value>Электронная почта</value>
+  </data>
+  <data name="EmailPlaceholder" xml:space="preserve">
+    <value>Введите электронную почту</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>Введите пароль</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Поле Пароль является обязательным</value>
+  </data>
+  <data name="PasswordType" xml:space="preserve">
+    <value>Введите валидный пароль</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="UserNamePlaceholder" xml:space="preserve">
+    <value>Введите имя</value>
   </data>
 </root>

@@ -1,62 +1,57 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using project.Models.Entities;
 using project.Models.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace project.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly UserRepository _userRepository;
-        private readonly CollectionRepository _collectionRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AdminController(
-            UserRepository userRepository, 
-            CollectionRepository collectionRepository)
+        public AdminController(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
-            _collectionRepository = collectionRepository;
+            _unitOfWork = unitOfWork;
         }
 
 
         public async Task<IActionResult> Admin()
         {
-            List<User> users = await _userRepository.GetAllAsync();
+            List<IdentityUser> users = await _unitOfWork.Users.GetAllAsync();
             return View(users);
         }
 
         public async Task<IActionResult> BlockUser(string id)
         {
-            await _userRepository.BlockUserAsync(id);
+            await _unitOfWork.Users.BlockUserAsync(id);
             return RedirectToAction("Admin");
         }
 
         public async Task<IActionResult> UnblockUser(string id)
         {
-            await _userRepository.UnblockUserAsync(id);
+            await _unitOfWork.Users.UnblockUserAsync(id);
             return RedirectToAction("Admin");
         }
 
         public async Task<IActionResult> DeleteUser(string id)
         {
-            await _userRepository.UnblockUserAsync(id);
+            await _unitOfWork.Users.UnblockUserAsync(id);
             return RedirectToAction("Admin");
         }
 
         public async Task<IActionResult> PromoteUserToAdmin(string id)
         {
-            await _userRepository.PromoteUserToAdminAsync(id);
+            await _unitOfWork.Users.PromoteUserToAdminAsync(id);
             return RedirectToAction("Admin");
         }
 
-
         public async Task<IActionResult> UserCollections(string email)
         {
-            User user = await _userRepository.GetUserByEmailAsync(email);
-            var collections = _collectionRepository.GetAllByUser(user);
+            IdentityUser user = await _unitOfWork.Users.GetUserByEmailAsync(email);
+            var collections = _unitOfWork.Collections.GetAllByUserAsync(user);
 
             ViewData["User"] = user;
             return View(collections);

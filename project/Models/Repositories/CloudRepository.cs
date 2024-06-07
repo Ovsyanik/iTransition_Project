@@ -6,7 +6,7 @@ using CloudinaryDotNet.Actions;
 
 namespace project.Models.Repositories
 {
-    public class CloudRepository
+    public class CloudRepository : ICloudRepository
     {
         private string apiName = "dz9um6woc";
         private string apiKey = "678355628328799";
@@ -27,7 +27,7 @@ namespace project.Models.Repositories
             Transformation transformation = new Transformation().Width(960).Height(600).Crop("fill");
 
             return cloudinary.Api.UrlImgUp.Transform(transformation)
-                    .BuildUrl($"{uploadResult.PublicId}.{uploadResult.Format}");
+                .BuildUrl($"{uploadResult.PublicId}.{uploadResult.Format}");
         }
     }
 } 

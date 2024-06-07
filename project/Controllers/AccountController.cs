@@ -3,84 +3,73 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using project.Models.Entities;
-using project.Models.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Collections.Generic;
+using project.ViewModels;
+using System.Linq;
 
 namespace project.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserRepository _userRepository;
-        private readonly SignInManager<User> _signInManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IPasswordHasher<IdentityUser> _passwordHasher;
 
         public AccountController(
-            SignInManager<User> signInManager, 
-            UserRepository userRepository)
+            SignInManager<IdentityUser> signInManager, 
+            UserManager<IdentityUser> userManager,
+            IPasswordHasher<IdentityUser> passwordHasher)  
         {
             _signInManager = signInManager;
-            _userRepository = userRepository;
+            _userManager = userManager;
+            _passwordHasher = passwordHasher;
         }
 
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Authentication()
-        {
-            return View();
-        }
+        public IActionResult Authentication() => View();
+
+
+        [HttpGet]
+        public IActionResult Registration() => View();
 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AuthenticationUser(string email, string password)
+        public async Task<IActionResult> AuthenticationUser(LoginViewModel model)
         {
-            byte[] result = GenerateHash(email, password);
+            IdentityUser user = await _userManager.FindByEmailAsync(model.Email);
 
-            User user = await _userRepository.AuthenticateAsync(email, ByteToString(result));
-
-            if (user != null)
+            if (user == null)
             {
-                await Authenticate(user.Email);
-
-                Models.Entities.User.GetInstance(user.Email, user.Role);
-
-                return RedirectToAction("Index", "Home", new { email = email });
+                ModelState.AddModelError(string.Empty, "User don't found with of this email, Input correct user data");
+                return RedirectToAction("Authentication", "Account");
             }
             else
             {
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, true, false);
+
+                if (result.Succeeded)
+                {
+                    string role = _userManager.GetRolesAsync(user).Result.First();
+                    await Authenticate(model.Email, role);
+                    return RedirectToAction("Index", "Home");
+                }
+                
                 return RedirectToAction("Authentication", "Account");
             }
         }
 
 
-        [HttpGet]
-        public IActionResult Registration()
-        {
-            return View();
-        }
-
-
         [AllowAnonymous]
-        public IActionResult GoogleLogin()
+        public IActionResult ExternalLogin(string provider)
         {
             string redirectUrl = Url.Action("ExternalResponse", "Account");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
-            return new ChallengeResult("Google", properties);
-        }
-
-
-        [AllowAnonymous]
-        public IActionResult FacebookLogin()
-        {
-            string redirectUrl = Url.Action("ExternalResponse", "Account");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Facebook", redirectUrl);
-            return new ChallengeResult("Facebook", properties);
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
         }
 
 
@@ -89,51 +78,20 @@ namespace project.Controllers
         {
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
 
-            User user, checkUser;
-
-            if (info.LoginProvider == "Google")
+            if(info != null) 
             {
-                user = new User
-                {
-                    Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
-                    UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
-                    Provider = info.LoginProvider,
-                    Role = RoleUser.User
-                };
-
-                checkUser = await _userRepository.GetUserByEmailAsync(info.Principal.FindFirst(ClaimTypes.Email).Value);
-            } else
-            {
-                user = new User
-                {
-                    Email = info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value,
-                    UserName = info.Principal.FindFirst(ClaimTypes.Name).Value,
-                    Provider = info.LoginProvider,
-                    Role = RoleUser.User
-                };
-
-                checkUser = await _userRepository.GetUserByEmailAsync(info.Principal.FindFirst(ClaimTypes.NameIdentifier).Value);
+                IdentityUser user = await _userManager.FindByEmailAsync(info.Principal.FindFirst(ClaimTypes.Email).Value);
+                string role = _userManager.GetRolesAsync(user).Result.First();
+                
+                await Authenticate(user.Email, role);
             }
-            if (checkUser == null)
-            {
-                await _userRepository.RegisterAsync(user);
-            }
-
-            await Authenticate(user.Email);
-
-            User user2 = await _userRepository.GetUserByEmailAsync(user.Email);
-
-            Models.Entities.User.GetInstance(user2.Email, user2.Role);
 
             return RedirectToAction("Index", "Home");
         }
 
-
-        public async Task<IActionResult> SignOut()
+        public async Task<IActionResult> LogOut()
         {
-            Models.Entities.User.SignOut();
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-            
+            await _signInManager.SignOutAsync();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return RedirectToAction("Authentication", "Account");
@@ -142,59 +100,46 @@ namespace project.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrationUser(string userName, string email, string password)
-        {
-            User user = await _userRepository.GetUserByEmailAsync(email);
-
-            if (user == null)
+        public async Task<IActionResult> Registration(RegisterViewModel model)
+        {   
+            if(ModelState.IsValid)
             {
-                byte[] result = GenerateHash(email, password);
+                string passwordHash = _passwordHasher.HashPassword(new IdentityUser() { Email = model.Email }, model.Password);
 
-                User newUser = new User
+                IdentityUser user = new()
                 {
-                    UserName = userName,
-                    Email = email,
-                    PasswordHash = ByteToString(result),
-                    Role = RoleUser.User
+                    UserName = model.UserName,
+                    Email = model.Email, 
+                    PasswordHash = passwordHash, 
                 };
-                
-                await _userRepository.RegisterAsync(newUser);
 
-                return RedirectToAction("Authentication", "Account");
+                var result = await _userManager.CreateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    await _userManager.ConfirmEmailAsync(user, model.Password);
+                    await _userManager.AddToRoleAsync(user, "User");
+
+                    return RedirectToAction("Authentication", "Account");
+                }
             }
-            else
-            {
-                return RedirectToAction("Registration", "Account");
-            }
+
+            return View(model);
         }
 
 
-        private async Task Authenticate(string email)
+        private async Task Authenticate(string email, string role)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, email)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, email),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, role)
             };
 
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie",
                 ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-        }
-
-
-        private string ByteToString(byte[] bytes)
-        {
-            return Convert.ToBase64String(bytes);
-        }
-
-
-        private byte[] GenerateHash(string salt, string password) 
-        {
-            SHA512 sha = new SHA512Managed();
-            string passwordWothSalt = salt + password;
-            byte[] dataByte = Encoding.Default.GetBytes(passwordWothSalt);
-            return sha.ComputeHash(dataByte);
         }
     }
 }

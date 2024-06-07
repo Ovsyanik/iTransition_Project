@@ -147,3 +147,21 @@ body {
     float: right;
     margin-left: 5px;
 }
+
+.commentInput {
+    width: 25vw;
+}
+
+.commentInputHeight {
+    height: 50px;
+}
+
+@media (max-width: 600px) {
+    .commentInput {
+        width: 64vw;
+    }
+
+    .commentInputHeight {
+        height: 40px;
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using project.Models.Entities;
 using System;
 using System.Collections.Generic;
@@ -7,16 +8,14 @@ using System.Threading.Tasks;
 
 namespace project.Models.Repositories
 {
-    public class CollectionRepository
+    public class CollectionRepository : ICollectionRepository
     {
-        private readonly MyDbContext _context;
+        private readonly ApplicationContext _context;
 
-
-        public CollectionRepository(MyDbContext context)
+        public CollectionRepository(ApplicationContext context)
         {
             _context = context;
         }
-
 
         public async Task<Collection> GetByIdAsync(int id)
         {
@@ -29,21 +28,18 @@ namespace project.Models.Repositories
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
-
-        public List<Collection> GetAllByUser(User user)
+        public Task<List<Collection>> GetAllByUserAsync(IdentityUser user)
         {
-            return _context.Collections
-                .Where(c => c.User.Id == user.Id).ToList();
+            return _context.Collections.Where(c => c.User.Id == user.Id).ToListAsync();
         }
 
-
-        public async Task<List<Collection>> GetCollectionsLargestItem()
+        public async Task<List<Collection>> GetCollectionsLargestItemAsync()
         {
-            List<Collection> collections = await _context.Collections
-                .OrderByDescending(c => c.Items.Count).Take(6).ToListAsync();
-            return collections;
+            return await _context.Collections
+                .OrderByDescending(c => c.Items.Count)
+                .Take(6)
+                .ToListAsync();
         }
-
 
         public async Task<int> AddAsync(Collection collection)
         {
@@ -52,14 +48,12 @@ namespace project.Models.Repositories
             return collection.Id;
         }
 
-
         public async Task DeleteAsync(int id)
         {
             Collection collection = await GetByIdAsync(id);
             _context.Collections.Remove(collection);
             await SaveAsync();
         }
-
 
         public async Task<Collection> SortByIdAsync(int id)
         {
@@ -77,7 +71,6 @@ namespace project.Models.Repositories
             return collection;
         }
 
-
         public async Task<Collection> SortByNameAsync(int id)
         {
             Collection collection = await GetByIdAsync(id);
@@ -94,7 +87,6 @@ namespace project.Models.Repositories
             return collection;
         }
 
-
         public async Task<Collection> FilterByName(int id, string text)
         {
             Collection collection = await GetByIdAsync(id);
@@ -108,26 +100,23 @@ namespace project.Models.Repositories
             return collection;
         }
 
-
         public async Task<Collection> FilterByTags(int id, string tags)
         {
             Collection collection = await GetByIdAsync(id);
             List<Item> items = new List<Item>();
             foreach (Item item in collection.Items)
             {
-                if(item.Tags.ListToString().Contains(tags))
+                if(String.Join(", ", item.Tags).Contains(tags))
                     items.Add(item);
             }
             collection.Items = items;
             return collection;
         }
 
-
-        private async Task SaveAsync()
+        public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
         }
-
 
         public async Task<Collection> EditCollection(Collection newCollection)
         {

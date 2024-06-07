@@ -120,14 +120,38 @@
   <data name="AddComment" xml:space="preserve">
     <value>Добавить</value>
   </data>
+  <data name="Collection" xml:space="preserve">
+    <value>Коллекция</value>
+  </data>
+  <data name="Comments" xml:space="preserve">
+    <value>Комментарии</value>
+  </data>
+  <data name="Creator" xml:space="preserve">
+    <value>Создатель</value>
+  </data>
   <data name="DeleteItem" xml:space="preserve">
     <value>Удалить элемент</value>
   </data>
   <data name="DeleteItemText" xml:space="preserve">
     <value>Вы уверены? </value>
   </data>
+  <data name="Description" xml:space="preserve">
+    <value>Описание</value>
+  </data>
   <data name="EditItem" xml:space="preserve">
     <value>Изменить элемент</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>Элемент</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Тэги</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Тематика</value>
   </data>
   <data name="WriteComment" xml:space="preserve">
     <value>Напишите комментарий</value>

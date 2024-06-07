@@ -1,16 +1,23 @@
 ﻿@inject IViewLocalizer Localizer
-@{
-    List<Item> items = Model;
+<style>
+.item {
+    height: 50px;
+    width: 48%;
+    margin: 5px 10px;
+    background-color: #E3E3E3;
+    border: 1px solid #E3E3E3;
+    border-radius: 10px;
 }
+</style>
 
 <h2 class="text-center">@Localizer["Items"]</h2>
 <div class="container">
     <div class="d-flex flex-wrap">
-        @for (int i = 0; i < items.Count; i++)
+        @foreach (Item item in (Model as List<Item>))
         {
-            <div style="height: 50px; width: 48%; margin: 5px 10px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px;" 
-                 onclick="goToItem(@Html.Raw(Json.Serialize(items[i].Id)))">
-                <div class="text-center" style="font-size: 20px">@items[i].Name</div>
+            <div class='item'
+                 onclick="goToItem(@Html.Raw(Json.Serialize(item.Id)))">
+                <div class="text-center" style="font-size: 20px">@item.Name</div>
             </div>
         }
     </div>

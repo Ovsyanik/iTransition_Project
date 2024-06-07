@@ -1,9 +1,15 @@
-﻿@{ 
+﻿@inject IViewLocalizer Localizer
+
+@functions{
     string GetTheme()
     {
-        if (Context.Request.Cookies["Theme"].Equals("light"))
-            return "bg-light text-dark";
-        else return "bg-dark text-light";
+        if (Context.Request.Cookies["Theme"] != null)
+        {
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+                return "bg-white text-dark";
+            else return "bg-dark text-light";
+        }
+        return "bg-light text-dark";
     }
 }
 
@@ -12,15 +18,23 @@
       method="post" class="form-horizontal">
     <select name="theme" onchange="this.form.submit();"
             style="border: 0px" class="@GetTheme()">
-        @if (Context.Request.Cookies["Theme"].Equals("light"))
+        @if (Context.Request.Cookies["Theme"] != null)
         {
-            <option value="light" selected>light</option>
-            <option value="dark">dark</option>
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+            {
+                <option value="light" selected>@Localizer["light"]</option>
+                <option value="dark">@Localizer["dark"]</option>
+            }
+            else
+            {
+                <option value="light">@Localizer["light"]</option>
+                <option value="dark" selected>@Localizer["dark"]</option>
+            }
         }
         else
         {
-            <option value="light">light</option>
-            <option value="dark" selected>dark</option>
+            <option value="light" selected>@Localizer["light"]</option>
+            <option value="dark">@Localizer["dark"]</option>
         }
     </select>
 </form>

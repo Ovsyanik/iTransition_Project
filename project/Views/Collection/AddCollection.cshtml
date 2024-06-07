@@ -16,12 +16,6 @@
 
     List<SelectListItem> selectListItems = new List<SelectListItem>();
 
-    string userName = null;
-    if (ViewData["UserEmail"] != null)
-    {
-        userName = ViewData["UserEmail"].ToString();
-    }
-
     foreach (var type in customFieldTypes)
     {
         selectListItems.Add(new SelectListItem { Value = type.ToString(), Text = type.ToString() });
@@ -32,9 +26,12 @@
     {
         collection = Model;
     }
+}
 
-    string GetActionForm() {
-        return collection.Id == 0 ? "AddCollectionPost" : "EditCollection";
+@functions {
+    string GetActionForm()
+    {
+        return Model == null ? "AddCollectionPost" : "EditCollection";
     }
 }
 <h2 class="text-center">@Localizer["AddCollection"]</h2>
@@ -44,7 +41,7 @@
      {
         <input type="hidden" name="Id" value="@collection.Id" />
      }
-    <input type="hidden" name="userEmail" value="@userName" />
+    <input type="hidden" name="userEmail" value="@User.Identity.Name" />
     <div class="form-group">
         <label for="name">@Localizer["Name"]</label>
         <input type="text" class="form-control" id="name" name="name"
@@ -101,18 +98,18 @@
 </form>
 
 @section Scripts {
-    <script>
-        function callondrop(e) {
-            e.preventDefault();
-            if ((e.dataTransfer && e.dataTransfer.files) || (e.dataTransfer && e.dataTransfer.files)) {
-                var files = e.target.files || e.dataTransfer.files;
-                $('#files')[0].files = files;
-            }
-            return false;
+<script>
+    function callondrop(e) {
+        e.preventDefault();
+        if ((e.dataTransfer && e.dataTransfer.files) || (e.dataTransfer && e.dataTransfer.files)) {
+            var files = e.target.files || e.dataTransfer.files;
+            $('#files')[0].files = files;
         }
+        return false;
+    }
 
-        function newField(selectedListitems) {
-            let container = document.getElementById("fields");
+    function newField(selectedListitems) {
+        let container = document.getElementById("fields");
             let fieldCount = container.getElementsByTagName("input").length;
             let nextFieldId = fieldCount + 1;
             let div = document.createElement("div");
@@ -143,7 +140,7 @@
             div.appendChild(field);
             div.appendChild(typeField);
 
-            container.appendChild(div);
-        }
-    </script>
+        container.appendChild(div);
+    }
+</script>
 }

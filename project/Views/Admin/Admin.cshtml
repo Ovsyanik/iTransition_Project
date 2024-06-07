@@ -1,6 +1,6 @@
 ﻿@inject IViewLocalizer Localizer
 @{
-    List<User> users = Model;
+    List<IdentityUser> users = Model;
 }
 
 <h2 class="text-center">@Localizer["UsersTitle"]</h2>
@@ -8,61 +8,41 @@
 <table class="table" id="table">
     <thead class="thead-light">
         <tr>
-            <th scope="col">Id</th>
-            <th scope="col">Name</th>
-            <th scope="col">Email</th>
-            <th scope="col">Role</th>
+            <th scope="col">@Localizer["Id"]</th>
+            <th scope="col">@Localizer["Name"]</th>
+            <th scope="col">@Localizer["Email"]</th>
+            <th scope="col">@Localizer["Role"]</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (User user in users)
+        @foreach (IdentityUser user in users)
         {
             <tr>
                 <td>@user.Id</td>
                 <td><a href="/Collection/Collections?email=@user.Email">@user.UserName</a></td>
                 <td>@user.Email</td>
-                <td>@user.Role</td>
+                @*<td>@user</td>*@
 
                 @if (!user.LockoutEnabled || user.LockoutEnd < DateTime.Now)
                 {
                     <td>
-                        @Html.ActionLink(
-                        "Block",
-                        "BlockUser",
-                        "Admin",
-                        new { id = user.Id },
-                        new { @class = "btn btn-danger" })
+                        <a href='/Admin/BlockUser?id=@user.Id' class="btn btn-danger">@Localizer["Block"]</a>
                     </td>
-                    if (user.Role == RoleUser.User)
-                    {
+                    //if (user.Role == RoleUser.User)
+                    //{
                         <td>
-                            @Html.ActionLink(
-                            "Promote to admin",
-                            "PromoteUserToAdmin",
-                            "Admin",
-                            new { id = user.Id },
-                            new { @class = "btn btn-primary" })
+                            <a href='/Admin/PromoteUserToAdmin?id=@user.Id' class="btn btn-primary">@Localizer["Promoute"]</a>
                         </td>
-                    }
+                    //}
 
                 }
                 else if (user.LockoutEnabled && user.LockoutEnd > DateTime.Now)
                 {
                     <td>
-                        @Html.ActionLink(
-                        "Unblock",
-                        "UnblockUser",
-                        "Admin",
-                        new { id = user.Id },
-                        new { @class = "btn btn-warning" })
+                        <a href='/Admin/UnblockUser?id=@user.Id' class="btn btn-warning">@Localizer["Unblock"]</a>
                     </td>
                     <td>
-                        @Html.ActionLink(
-                        "Delete",
-                        "DeleteUser",
-                        "Admin",
-                        new { id = user.Id },
-                        new { @class = "btn btn-danger" })
+                        <a href='/Admin/DeleteUser?id=@user.Id' class="btn btn-danger">@Localizer["Delete"]</a>
                     </td>
                 }
             </tr>

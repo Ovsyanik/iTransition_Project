@@ -1,5 +1,5 @@
-﻿
-@inject IViewLocalizer Localizer
+﻿@inject IViewLocalizer Localizer
+
 @{
     ViewData["Title"] = "Home Page";
     List<Item> lastItems = ViewData["LastItems"] as List<Item>;
@@ -12,20 +12,25 @@
         result.Add(k.Key, tags.Where(i => i == k.Key).Count());
     }
 }
-
-<h2 class="text-ctenter">@Localizer["LastItems"]</h2>
-
+@if (lastItems is null)
+{
+    <h2 class="text-ctenter">@Localizer["LastItems"]</h2>
+}
 <div class="d-flex justify-content-center flex-wrap" style="margin-top: 15px;">
     @foreach (Item item in lastItems)
     {
-        <div onclick="goToItem(@item.Id)" class="col-md-2" style="height: 75px; margin: 5px 10px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px; ">
+        <div onclick="goToItem(@item.Id)" class="col-md-2" 
+             style="height: 75px; margin: 5px 10px; background-color: #E3E3E3; border: 1px solid #E3E3E3; border-radius: 10px; cursor: pointer;">
             <p class="text-center" style="font-size: 20px; margin-top: 15px; font-weight:700">@item.Name</p>
-            <p class="text-center" style="margin-top: -15px;">@item.Tags.ListToString()</p>
+            <p class="text-center" style="margin-top: -15px;">@String.Join(", ", item.Tags)</p>
         </div>
     }
 </div>
 
-<h2 class="text-ctenter" style="margin-top: 30px">@Localizer["CollectionsLargestItems"]</h2>
+@if (collections is null)
+{
+    <h2 class="text-ctenter" style="margin-top: 30px">@Localizer["CollectionsLargestItems"]</h2>
+}
 
 <div class="d-flex justify-content-center flex-wrap" style="margin-top: 10px;">
     @foreach (Collection collection in collections)
@@ -40,7 +45,10 @@
     }
 </div>
 
-<h3 class="text-center" style="margin-top: 15px">@Localizer["TagsCloud"]</h3>
+@if (result is null)
+{
+    <h3 class="text-center" style="margin-top: 15px">@Localizer["TagsCloud"]</h3>
+}
 <div class="container">
     <div class="row justify-content-center">
         @foreach (var tag in result)

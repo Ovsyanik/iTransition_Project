@@ -1,6 +1,6 @@
-﻿@inject IViewLocalizer Localizer
+﻿@*@inject IViewLocalizer Localizer
 @{
-    User user = project.Models.Entities.User.GetInstance();
+    IdentityUser user =User.Claims.Role;
     Collection collection = Model;
 }
 
@@ -37,8 +37,8 @@
         <input type="hidden" name="collectionId" value="@collection.Id">
         <div class="input-group-prepend">
             <select name="field" class="custom-select" required>
-                <option value="Name" selected>Name</option>
-                <option value="Tags">Tags</option>
+                <option value="Name" selected>@Localizer["Name"]</option>
+                <option value="Tags">@Localizer["Tags"]</option>
             </select>
         </div>
         <input type="text" class="form-control" name="text" autocomplete="off">
@@ -51,10 +51,10 @@
 <table class="table" id="table" style="margin-top: 15px;">
     <thead class="thead-light">
         <tr>
-            <th scope="col" onclick="sortById(@collection.Id)">Id</th>
-            <th scope="col" onclick="sortByName(@collection.Id)">Name</th>
-            <th scope="col" onclick="">Tags</th>
-            <th scope="col" onclick="">Likes</th>
+            <th scope="col" onclick="sortById(@collection.Id)">@Localizer["Id"]</th>
+            <th scope="col" onclick="sortByName(@collection.Id)">@Localizer["Name"]</th>
+            <th scope="col" onclick="">@Localizer["Tags"]</th>
+            <th scope="col" onclick="">@Localizer["Likes"]</th>
             @foreach (CustomField customField in collection.Fields)
             {
                 <th scope="col">@customField.Title</th>
@@ -135,4 +135,4 @@
             };
         };
     </script>
-}
+}*@

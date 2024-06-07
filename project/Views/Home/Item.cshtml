@@ -1,4 +1,5 @@
 ﻿@inject IViewLocalizer Localizer
+
 @{
     Item item = Model;
     List<CustomField> fields = ViewData["Field"] as List<CustomField>;
@@ -15,43 +16,25 @@
     }
 }
 
-<style>
-    .commentInput {
-        width: 25vw;
-    }
-    .commentInputHeight {
-        height: 50px;
-    }
-    @@media (max-width: 600px) {
-        .commentInput {
-            width: 64vw;
-            
-        }
-        .commentInputHeight {
-            height: 40px;
-        }
-    }
-</style>
-
 <div class="d-flex flex-wrap">
     <div class="col-md-2"></div>
     <div class="col-md-3">
-        <strong>Item</strong>
-        <p>Name: @item.Name</p>
-        <p>Tags: @item.Tags.ListToString()</p>
-        <p>Creator: @item.Collection.User.Email</p>
+        <strong>@Localizer["Item"]</strong>
+        <p>@Localizer["Name"]: @item.Name</p>
+        <p>@Localizer["Tags"]: @String.Join(", ", item.Tags)</p>
+        <p>@Localizer["Creator"]: @item.Collection.User.Email</p>
         @for (int i = 0; i < fields.Count; i++)
         {
-            <p>@fields[i].Title: @values[i].Value</p>
+            <p>@fields[i].Title: @item.CustomFieldValues.ElementAt(i).Value</p>
         }
     </div>
     <div class="col-md-1"></div>
     <div class="col-md-1"></div>
     <div class="col-md-3">
-        <strong>Collection</strong>
-        <p>Name: @item.Collection.Name</p>
-        <p>Theme: @item.Collection.Type</p>
-        <p>Description: @item.Collection.Description</p>
+        <strong>@Localizer["Collection"]</strong>
+        <p>@Localizer["Name"]: @item.Collection.Name</p>
+        <p>@Localizer["Theme"]: @item.Collection.Type</p>
+        <p>@Localizer["Description"]: @item.Collection.Description</p>
     </div>
     <div class="col-md-2"></div>
 </div>
@@ -59,13 +42,13 @@
     <div id="likeDiv" style="background-color: @GetCollorLike(); width: 30px; height: 30px; border-radius: 15px;">
         <img onclick="addLike(@item.Id)" src="~/like_icon.png" width="24" style="margin-left: 3px;" height="24" />
     </div>
-    <span style="margin-left: 3px;">Likes: @item.Likes.Count</span>
+    <span style="margin-left: 3px;">@Localizer["Likes"]: @item.Likes.Count</span>
 </div>
 
 @if (User.Identity.IsAuthenticated)
 {
-    if (item.Collection.User.Email == project.Models.Entities.User.GetInstance().Email)
-    {
+    @*if (item.Collection.User.Email == user.Email @*|| user.Role.Equals(RoleUser.Admin))*@
+    //{
         <div style="margin-top: 63px">
             <a class="btn btn-primary"
                asp-controller="Home"
@@ -74,12 +57,12 @@
 
             <button class="btn btn-primary" onclick="showModal()">@Localizer["DeleteItem"]</button>
         </div>
-    }
+    //}
 }
 
 <hr/>
 
-<strong class="text-center">Comments</strong>
+<strong class="text-center">@Localizer["Comments"]</strong>
 
 <div class="container" style="margin-top:15px;">
 

@@ -117,13 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ExternalLoginTitle" xml:space="preserve">
-    <value>Вход через стороние сервисы </value>
+  <data name="dark" xml:space="preserve">
+    <value>dark</value>
   </data>
-  <data name="LocalLoginTitle" xml:space="preserve">
-    <value>Вход в локальную учетную запись</value>
-  </data>
-  <data name="Submit" xml:space="preserve">
-    <value>Отправить</value>
+  <data name="light" xml:space="preserve">
+    <value>light</value>
   </data>
 </root>

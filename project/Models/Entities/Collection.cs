@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace project.Models.Entities
@@ -14,7 +15,7 @@ namespace project.Models.Entities
 
         public string PathImage { get; set; }
 
-        public User User { get; set; }
+        public IdentityUser User { get; set; }
 
         public TypeItem Type { get; set; }
 

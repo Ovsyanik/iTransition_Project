@@ -1,29 +1,30 @@
 ﻿@inject IViewLocalizer Localizer
+@model LoginViewModel
 <div class="row">
     <div class="col-md-6">
         <h2>@Localizer["LocalLoginTitle"]</h2>
         <hr />
         <form method="post" action="~/account/AuthenticationUser">
+            <div class="validation" asp-validation-summary="All"></div>
+            <div class="validation">@Model</div>
             <div class="form-group">
-                <label for="email">@Localizer["Email"]</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="@Localizer["EmailPlaceholder"]">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label for="exampleInputPassword1">@Localizer["Password"]</label>
-                <input type="password" class="form-control" id="password" 
-                       name="password" placeholder="@Localizer["PasswordPlaceholder"]">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control"/>
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-primary">@Localizer["Submit"]</button>
         </form>
     </div>
 
-
     <div class="col-md-6">
         <h2>@Localizer["ExternalLoginTitle"]</h2>
         <hr />
-        <a class="btn btn-primary" asp-controller="Account" asp-action="GoogleLogin">Google</a>
-        <a class="btn btn-primary" asp-controller="Account" asp-action="FacebookLogin">Facebook</a>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="ExternalLogin" asp-route-provider="Google">Google</a>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="ExternalLogin" asp-route-provider="Facebook">Facebook</a>
     </div>
-
 </div>
-

@@ -1,25 +1,37 @@
 ﻿@inject IViewLocalizer Localizer
-@{
-    User user = project.Models.Entities.User.GetInstance();
+
+@functions{
     string GetTheme()
     {
-        if (Context.Request.Cookies["Theme"].Equals("light"))
-            return "bg-white navbar-light";
-        else return "bg-dark navbar-dark";
+        if (Context.Request.Cookies["Theme"] != null)
+        {
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+                return "bg-white navbar-light";
+            else return "bg-dark navbar-dark";
+        }
+        return "bg-white navbar-light";
     }
 
     string GetThemeForButton()
     {
-        if (Context.Request.Cookies["Theme"].Equals("light"))
-            return "text-dark";
-        else return "text-light";
+        if (Context.Request.Cookies["Theme"] != null)
+        {
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+                return "text-dark";
+            else return "text-light";
+        }
+        return "text-dark";
     }
 
-       string GetThemeBody()
+    string GetThemeBody()
     {
-        if (Context.Request.Cookies["Theme"].Equals("light"))
-            return "background-color: #ffffff";
-        else return "background-color: #EDEEFF";
+        if (Context.Request.Cookies["Theme"] != null)
+        {
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+                return "background-color: #ffffff";
+            else return "background-color: #EDEEFF";
+        }
+        return "background-color: #ffffff";
     }
 }
 
@@ -46,54 +58,54 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            if (user.Role == RoleUser.User)
+                            if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Collection" asp-action="Collections">@Localizer["Personal"]</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Admin" asp-action="Admin">@Localizer["Admin"]</a>
+                                </li>
+                            }
+                            else
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @GetThemeForButton()" asp-controller="Collection" asp-action="Collections">@Localizer["Personal"]</a>
                                 </li>
                             }
                         }
-                        @if (user != null)
-                        {
-                            if (user.Role == RoleUser.Admin)
+
+                    </ul>
+                    <div class="my-lg-0">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item my-lg-0">
+                                <div class="search">
+                                    <form asp-controller="Home" asp-action="Search" method="get">
+                                        <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                        <input type="text" name="searchText" placeholder="@Localizer["Search"]..." autocomplete="off" />
+                                    </form>
+                                </div>
+                            </li>
+
+                            @if (User.Identity.IsAuthenticated)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link @GetThemeForButton()" asp-controller="Admin" asp-action="Admin">@Localizer["Admin"]</a>
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="LogOut">@Localizer["SignOut"]</a>
                                 </li>
                             }
-                        }
-                    </ul>
-                </div>
-
-                <div class="float-right">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <div class="search">
-                                <form asp-controller="Home" asp-action="Search" method="get">
-                                    <button value="" title="Найти" alt="Найти" class="ser-button" type="submit">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-                                    <input type="text" name="searchText" placeholder="@Localizer["Search"]..." autocomplete="off"/>
-                                </form>
-                            </div>
-                        </li>
-
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="SignOut">@Localizer["SignOut"]</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Registration">@Localizer["Register"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Authentication">@Localizer["Login"]</a>
-                            </li>
-                        }
-                    </ul>
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Registration">@Localizer["Register"]</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @GetThemeForButton()" asp-controller="Account" asp-action="Authentication">@Localizer["Login"]</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
         </nav>

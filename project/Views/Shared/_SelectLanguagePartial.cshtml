@@ -10,12 +10,18 @@
     var cultureItems = LocOptions.Value.SupportedUICultures
         .Select(c => new SelectListItem { Value = c.Name, Text = c.NativeName })
         .ToList();
+}
 
+@functions {
     string GetTheme()
     {
-        if (Context.Request.Cookies["Theme"].Equals("light"))
-            return "bg-light text-dark";
-        else return "bg-dark text-light";
+        if (Context.Request.Cookies["Theme"] != null)
+        {
+            if (Context.Request.Cookies["Theme"].Equals("light"))
+                return "bg-white text-dark";
+            else return "bg-dark text-light";
+        }
+        return "bg-light text-dark";
     }
 }
 

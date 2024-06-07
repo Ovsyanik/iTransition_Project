@@ -1,48 +1,46 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using project.Models.Entities;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace project.Models.Repositories
 {
-    public class TagRepository
+    public class TagRepository : ITagRepository
     {
-        private readonly MyDbContext _context;
+        private readonly ApplicationContext _db;
 
-        public TagRepository(MyDbContext myDbContext)
+        public TagRepository(ApplicationContext db)
         {
-            _context = myDbContext;
+            _db = db;
         }
 
 
         public async Task<List<Tags>> GetAllAsync()
         {
-            return await _context.Tags.ToListAsync();
+            return await _db.Tags.ToListAsync();
         }
 
 
         public async Task<List<string>> GetAllValuesAsync()
         {
             var tags = await GetAllAsync();
-            List<string> tagsString = new List<string>();
-            foreach(Tags tag in tags) {
-                tagsString.Add(tag.Value);
-            }
-            return tagsString;
+
+            return tags.Select(tag => tag.Value).ToList();
         }
 
 
         public async Task<Tags> AddAsync(Tags tag)
         {
-            await _context.Tags.AddAsync(tag);
+            await _db.Tags.AddAsync(tag);
             await SaveAsync();
             return tag;
         }
 
 
-        private async Task SaveAsync()
+        public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
     }
 }

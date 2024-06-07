@@ -1,90 +1,82 @@
-﻿using Microsoft.EntityFrameworkCore;
-using project.Models.Entities;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace project.Models.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
-        private readonly MyDbContext _context;
+        private readonly ApplicationContext _db;
 
-        public UserRepository(MyDbContext context)
+        public UserRepository(ApplicationContext db)
         {
-            _context = context;
+            _db = db;
         }
 
-        public async Task<User> GetUserByNameAsync(string name)
+        public async Task<IdentityUser> GetUserByNameAsync(string name)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.UserName == name);
+            return await _db.Users.FirstOrDefaultAsync(u => u.UserName == name);
         }
 
-        public async Task<User> GetUserByEmailAsync(string email)
+        public async Task<IdentityUser> GetUserByEmailAsync(string email)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+            return await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task<List<User>> GetAllAsync()
+        public async Task<List<IdentityUser>> GetAllAsync()
         {   
-            List<User> users = await _context.Set<User>().ToListAsync();
+            List<IdentityUser> users = await _db.Set<IdentityUser>().ToListAsync();
             return users;
         }
 
-        public async Task RegisterAsync(User user)
+        public async Task RegisterAsync(IdentityUser user)
         {
-            await _context.Set<User>().AddAsync(user);
-
+            await _db.Set<IdentityUser>().AddAsync(user);
             await SaveAsync();
         }
 
         public async Task BlockUserAsync(string id)
         {
-            User user = _context.Users.FirstOrDefault(u => u.Id == id);
+            IdentityUser user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
             user.LockoutEnabled = true;
             user.LockoutEnd = DateTime.Now.AddYears(1);
             await SaveAsync();
         }
 
-
         public async Task UnblockUserAsync(string id)
         {
-            User user = _context.Users.FirstOrDefault(u => u.Id == id);
+            IdentityUser user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
             user.LockoutEnabled = false;
             user.LockoutEnd = DateTime.Now;
             await SaveAsync();
         }
 
-
         public async Task DeleteUserAsync(string id)
         {
-            User user = _context.Users.FirstOrDefault(u => u.Id == id);
-            _context.Users.Remove(user);
+            IdentityUser user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+            _db.Users.Remove(user);
             await SaveAsync();
         }
 
         public async Task PromoteUserToAdminAsync(string id)
         {
-            User user = _context.Users.FirstOrDefault(u => u.Id == id);
-            user.Role = RoleUser.Admin;
+            IdentityUser user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
             await SaveAsync();
         }
 
-        public async Task<User> AuthenticateAsync(string email, string password)
+        public async Task<IdentityUser> AuthenticateAsync(string email, string password)
         {
-            User user = await _context.Users.FirstOrDefaultAsync(u =>
+            IdentityUser user = await _db.Users.FirstOrDefaultAsync(u =>
                 u.Email == email && u.PasswordHash == password);
             
             return user;
         }
 
-
-        private async Task SaveAsync()
+        public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
     }
 }
